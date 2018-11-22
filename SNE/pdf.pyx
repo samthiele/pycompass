@@ -230,7 +230,7 @@ def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray no
 """
 Compute the posterior probability at the specified point.
 """
-def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):
+def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):
     #compute the scatter matrix
     cdef double[:,:] X = cov * nobserved
     

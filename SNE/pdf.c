@@ -2232,7 +2232,6 @@ static const char __pyx_k_proposalWidth[] = "proposalWidth";
 static const char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
 static const char __pyx_k_scipy_special[] = "scipy.special";
-static const char __pyx_k_getPosterior1D[] = "getPosterior1D";
 static const char __pyx_k_log_p_proposed[] = "log_p_proposed";
 static const char __pyx_k_posteriorExp1D[] = "posteriorExp1D";
 static const char __pyx_k_trendPlunge2LL[] = "trendPlunge2LL";
@@ -2252,6 +2251,7 @@ static const char __pyx_k_strided_and_direct[] = "<strided and direct>";
 static const char __pyx_k_samplePosteriorMCMC[] = "samplePosteriorMCMC";
 static const char __pyx_k_strided_and_indirect[] = "<strided and indirect>";
 static const char __pyx_k_contiguous_and_direct[] = "<contiguous and direct>";
+static const char __pyx_k_getPosteriorDensityAt[] = "getPosteriorDensityAt";
 static const char __pyx_k_pycompass_SNE_pdf_pyx[] = "pycompass\\SNE\\pdf.pyx";
 static const char __pyx_k_MemoryView_of_r_object[] = "<MemoryView of %r object>";
 static const char __pyx_k_MemoryView_of_r_at_0x_x[] = "<MemoryView of %r at 0x%x>";
@@ -2371,7 +2371,7 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_gammaln;
-static PyObject *__pyx_n_s_getPosterior1D;
+static PyObject *__pyx_n_s_getPosteriorDensityAt;
 static PyObject *__pyx_n_s_getstate;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
 static PyObject *__pyx_n_s_grid;
@@ -2505,7 +2505,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_4wishLSF(CYTHON_UNUSED PyObject *
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_6logWish(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_X, int __pyx_v_n, double __pyx_v_phi, double __pyx_v_theta, double __pyx_v_alpha, double __pyx_v_e1, double __pyx_v_e2, double __pyx_v_e3, double __pyx_v_lsf); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_grid, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, int __pyx_v_steps); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_grid, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, PyArrayObject *__pyx_v_normal, int __pyx_v_steps); /* proto */
-static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_phi, double __pyx_v_theta, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, PyArrayObject *__pyx_v_n, int __pyx_v_steps); /* proto */
+static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_phi, double __pyx_v_theta, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, PyArrayObject *__pyx_v_n, int __pyx_v_steps); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, __Pyx_memviewslice __pyx_v_normal, int __pyx_v_nsamples, int __pyx_v_maxIter, double __pyx_v_proposalWidth, PyObject *__pyx_v_verbose); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_grid, __Pyx_memviewslice __pyx_v_trace); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_phi, double __pyx_v_theta, double __pyx_v_alpha, double __pyx_v_e1, double __pyx_v_e2, double __pyx_v_e3); /* proto */
@@ -5045,15 +5045,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
 /* "pycompass/SNE/pdf.pyx":233
  * Compute the posterior probability at the specified point.
  * """
- * def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
+ * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_9pycompass_3SNE_3pdf_13getPosterior1D = {"getPosterior1D", (PyCFunction)__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_9pycompass_3SNE_3pdf_13getPosteriorDensityAt = {"getPosteriorDensityAt", (PyCFunction)__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   double __pyx_v_phi;
   double __pyx_v_theta;
   PyArrayObject *__pyx_v_cov = 0;
@@ -5062,7 +5062,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_
   int __pyx_v_steps;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("getPosterior1D (wrapper)", 0);
+  __Pyx_RefNannySetupContext("getPosteriorDensityAt (wrapper)", 0);
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_phi,&__pyx_n_s_theta,&__pyx_n_s_cov,&__pyx_n_s_nobserved,&__pyx_n_s_n,&__pyx_n_s_steps,0};
     PyObject* values[6] = {0,0,0,0,0,0};
@@ -5094,25 +5094,25 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_theta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosterior1D", 0, 5, 6, 1); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 1); __PYX_ERR(0, 233, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_cov)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosterior1D", 0, 5, 6, 2); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 2); __PYX_ERR(0, 233, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nobserved)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosterior1D", 0, 5, 6, 3); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 3); __PYX_ERR(0, 233, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosterior1D", 0, 5, 6, 4); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 4); __PYX_ERR(0, 233, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
@@ -5122,7 +5122,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "getPosterior1D") < 0)) __PYX_ERR(0, 233, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "getPosteriorDensityAt") < 0)) __PYX_ERR(0, 233, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -5150,15 +5150,15 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("getPosterior1D", 0, 5, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 233, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 233, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pycompass.SNE.pdf.getPosterior1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pycompass.SNE.pdf.getPosteriorDensityAt", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 233, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_n), __pyx_ptype_5numpy_ndarray, 1, "n", 0))) __PYX_ERR(0, 233, __pyx_L1_error)
-  __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(__pyx_self, __pyx_v_phi, __pyx_v_theta, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_n, __pyx_v_steps);
+  __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(__pyx_self, __pyx_v_phi, __pyx_v_theta, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_n, __pyx_v_steps);
 
   /* function exit code */
   goto __pyx_L0;
@@ -5169,7 +5169,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosterior1D(PyObject *__pyx_
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_phi, double __pyx_v_theta, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, PyArrayObject *__pyx_v_n, int __pyx_v_steps) {
+static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_phi, double __pyx_v_theta, PyArrayObject *__pyx_v_cov, int __pyx_v_nobserved, PyArrayObject *__pyx_v_n, int __pyx_v_steps) {
   __Pyx_memviewslice __pyx_v_X = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_eval = NULL;
   CYTHON_UNUSED PyObject *__pyx_v_evec = NULL;
@@ -5189,10 +5189,10 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(CYTHON_UNUSED Py
   double __pyx_t_8;
   double __pyx_t_9;
   double __pyx_t_10;
-  __Pyx_RefNannySetupContext("getPosterior1D", 0);
+  __Pyx_RefNannySetupContext("getPosteriorDensityAt", 0);
 
   /* "pycompass/SNE/pdf.pyx":235
- * def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):
+ * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved             # <<<<<<<<<<<<<<
  * 
@@ -5436,7 +5436,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(CYTHON_UNUSED Py
   /* "pycompass/SNE/pdf.pyx":233
  * Compute the posterior probability at the specified point.
  * """
- * def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
+ * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
@@ -5448,7 +5448,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosterior1D(CYTHON_UNUSED Py
   __PYX_XDEC_MEMVIEW(&__pyx_t_3, 1);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("pycompass.SNE.pdf.getPosterior1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pycompass.SNE.pdf.getPosteriorDensityAt", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_X, 1);
@@ -26761,7 +26761,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_n_s_gammaln, __pyx_k_gammaln, sizeof(__pyx_k_gammaln), 0, 0, 1, 1},
-  {&__pyx_n_s_getPosterior1D, __pyx_k_getPosterior1D, sizeof(__pyx_k_getPosterior1D), 0, 0, 1, 1},
+  {&__pyx_n_s_getPosteriorDensityAt, __pyx_k_getPosteriorDensityAt, sizeof(__pyx_k_getPosteriorDensityAt), 0, 0, 1, 1},
   {&__pyx_n_s_getstate, __pyx_k_getstate, sizeof(__pyx_k_getstate), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
   {&__pyx_n_s_grid, __pyx_k_grid, sizeof(__pyx_k_grid), 0, 0, 1, 1},
@@ -27399,14 +27399,14 @@ static int __Pyx_InitCachedConstants(void) {
   /* "pycompass/SNE/pdf.pyx":233
  * Compute the posterior probability at the specified point.
  * """
- * def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
+ * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
   __pyx_tuple__52 = PyTuple_Pack(13, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_n, __pyx_n_s_steps, __pyx_n_s_X, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_lsf); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 233, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__52);
   __Pyx_GIVEREF(__pyx_tuple__52);
-  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(6, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_getPosterior1D, 233, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(6, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_getPosteriorDensityAt, 233, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 233, __pyx_L1_error)
 
   /* "pycompass/SNE/pdf.pyx":269
  *  -a nsamples x 3 numpy array where each element contains each [phi,theta,alpha] in the markov chain
@@ -27910,13 +27910,13 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
   /* "pycompass/SNE/pdf.pyx":233
  * Compute the posterior probability at the specified point.
  * """
- * def getPosterior1D(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
+ * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_13getPosterior1D, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_13getPosteriorDensityAt, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 233, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_getPosterior1D, __pyx_t_1) < 0) __PYX_ERR(0, 233, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_getPosteriorDensityAt, __pyx_t_1) < 0) __PYX_ERR(0, 233, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pycompass/SNE/pdf.pyx":269
