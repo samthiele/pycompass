@@ -14,6 +14,8 @@ from libc.math cimport sqrt
 import numpy as np
 cimport numpy as np
 import scipy.special as sp
+import scipy.stats as stats
+
 #cimport scipy as sp
 
 #pull pi from numpy
@@ -587,5 +589,74 @@ Converts a lat,lon coordinate to a cartestian vector.
 """
 def llToVec(lat,lon):
     return np.array( [cos(lat) * sin(lon),
-                      -sin(lat), 
+                      sin(lat), 
                       -cos(lat) * cos(lon)])
+                      
+
+"""
+Fast part of the code for the function below
+"""
+cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] data, double[:] kernel, double[:] acos, double lookupRes):
+    #loop through grid points
+    cdef double dot, alpha
+    cdef double hpi = pi / 2 #half-pi
+    cdef double nf = 1.0 / ndata #normalising factor for each kernel
+    cdef double[:] out = np.zeros(npoints)
+    cdef int _g, _d
+    for _g in range(npoints):
+        gx = grid[_g,0]
+        gy = grid[_g,1]
+        gz = grid[_g,2]
+        
+        for _d in range(ndata):
+            #compute dot product
+            dot = abs(grid[_g,0]*data[_d,0] + grid[_g,1]*data[_d,1] + grid[_g,2]*data[_d,2])
+            
+            #lookup corresponding alpha in lookup table
+            alpha = acos[int(dot*lookupRes)]
+            
+            #accumulate relevant kernel value
+            out[_g] += nf*kernel[int(lookupRes*alpha/hpi)]
+    return out
+                      
+"""
+Do a simple KDE on directional data
+
+**Arguments**:
+ -grid = a (2,n) list of (lats,lons) to evaluate the KDE on, as created by grid(...).
+ -data = a (2,n) lsit of (trend,plunge) measurements to perform the KDE on
+ -bandwidth = the standard deviation of the gaussian kernal used to build the KDE
+ 
+**Keywords**:
+ -lookupRes = the resolution of the lookup tables to use. Default is 1000. 
+ -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees). 
+"""
+def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):
+    #build lookup table for kernel and for acos calcs (speed hack)
+    lookupRes = kwds.get("lookupRes",1000)
+    _x = np.linspace(0,np.pi/2,lookupRes+1)
+    if kwds.get("degrees",True):
+        bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+    cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
+    
+    #create arccosine lookup table
+    _x = np.linspace(0,1,lookupRes+1)
+    cdef double[:] _acos = np.arccos(_x)
+
+    #convert grid to xyz vectors
+    gxyz = []
+    for _lat,_lon in np.array(grid).T:
+        gxyz.append( llToVec(_lat,_lon) )
+    gxyz = np.array(gxyz)
+    
+    #convert data to xyz vectors
+    dxyz = []
+    for _t,_p in np.array(data).T:
+        if kwds.get("degrees",True):
+            dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+        else:
+            dxyz.append( trendPlunge2Vec(_t,_p) )
+    dxyz = np.array(dxyz)
+    
+    #evaluate and return
+    return np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))

@@ -1529,6 +1529,33 @@ static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, 
     (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
 #endif
 
+/* dict_getitem_default.proto */
+static PyObject* __Pyx_PyDict_GetItemDefault(PyObject* d, PyObject* key, PyObject* default_value);
+
+/* ListAppend.proto */
+#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
+static CYTHON_INLINE int __Pyx_PyList_Append(PyObject* list, PyObject* x) {
+    PyListObject* L = (PyListObject*) list;
+    Py_ssize_t len = Py_SIZE(list);
+    if (likely(L->allocated > len) & likely(len > (L->allocated >> 1))) {
+        Py_INCREF(x);
+        PyList_SET_ITEM(list, len, x);
+        Py_SIZE(list) = len+1;
+        return 0;
+    }
+    return PyList_Append(list, x);
+}
+#else
+#define __Pyx_PyList_Append(L,x) PyList_Append(L,x)
+#endif
+
+/* PyObjectCallMethod1.proto */
+static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name, PyObject* arg);
+static PyObject* __Pyx__PyObject_CallMethod1(PyObject* method, PyObject* arg);
+
+/* append.proto */
+static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x);
+
 /* DictGetItem.proto */
 #if PY_MAJOR_VERSION >= 3 && !CYTHON_COMPILING_IN_PYPY
 static PyObject *__Pyx_PyDict_GetItem(PyObject *d, PyObject* key) {
@@ -1669,23 +1696,6 @@ static CYTHON_INLINE int __Pyx_PyList_Extend(PyObject* L, PyObject* v) {
     return PyList_SetSlice(L, PY_SSIZE_T_MAX, PY_SSIZE_T_MAX, v);
 #endif
 }
-
-/* ListAppend.proto */
-#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
-static CYTHON_INLINE int __Pyx_PyList_Append(PyObject* list, PyObject* x) {
-    PyListObject* L = (PyListObject*) list;
-    Py_ssize_t len = Py_SIZE(list);
-    if (likely(L->allocated > len) & likely(len > (L->allocated >> 1))) {
-        Py_INCREF(x);
-        PyList_SET_ITEM(list, len, x);
-        Py_SIZE(list) = len+1;
-        return 0;
-    }
-    return PyList_Append(list, x);
-}
-#else
-#define __Pyx_PyList_Append(L,x) PyList_Append(L,x)
-#endif
 
 /* None.proto */
 static CYTHON_INLINE void __Pyx_RaiseUnboundLocalError(const char *varname);
@@ -2024,6 +2034,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double); /*proto*/
 static double __pyx_f_9pycompass_3SNE_3pdf_wishLSF(__Pyx_memviewslice, int, int __pyx_skip_dispatch); /*proto*/
 static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice, int, double, double, double, double, double, double, double, int __pyx_skip_dispatch); /*proto*/
 static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice, int, double, double, double, double, double, int, double); /*proto*/
+static __Pyx_memviewslice __pyx_f_9pycompass_3SNE_3pdf_fillKDE(int, int, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, double); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -2076,11 +2087,14 @@ static PyObject *__pyx_builtin_IndexError;
 static const char __pyx_k_A[] = "A";
 static const char __pyx_k_N[] = "N";
 static const char __pyx_k_O[] = "O";
+static const char __pyx_k_T[] = "T";
 static const char __pyx_k_W[] = "W";
 static const char __pyx_k_X[] = "X";
 static const char __pyx_k_c[] = "c";
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_n[] = "n";
+static const char __pyx_k_p[] = "_p";
+static const char __pyx_k_t[] = "_t";
 static const char __pyx_k_x[] = "x";
 static const char __pyx_k_y[] = "y";
 static const char __pyx_k_WA[] = "WA";
@@ -2101,6 +2115,7 @@ static const char __pyx_k_pi[] = "pi";
 static const char __pyx_k_pr[] = "pr";
 static const char __pyx_k_sf[] = "sf";
 static const char __pyx_k_sp[] = "sp";
+static const char __pyx_k_N_2[] = "_N";
 static const char __pyx_k__45[] = "*";
 static const char __pyx_k_arc[] = "arc";
 static const char __pyx_k_cov[] = "cov";
@@ -2116,6 +2131,7 @@ static const char __pyx_k_e32[] = "e32";
 static const char __pyx_k_e33[] = "e33";
 static const char __pyx_k_eig[] = "eig";
 static const char __pyx_k_end[] = "end";
+static const char __pyx_k_get[] = "get";
 static const char __pyx_k_idx[] = "idx";
 static const char __pyx_k_lat[] = "lat";
 static const char __pyx_k_lik[] = "lik";
@@ -2132,15 +2148,22 @@ static const char __pyx_k_p13[] = "p13";
 static const char __pyx_k_p22[] = "p22";
 static const char __pyx_k_p23[] = "p23";
 static const char __pyx_k_p33[] = "p33";
+static const char __pyx_k_pdf[] = "pdf";
 static const char __pyx_k_phi[] = "phi";
+static const char __pyx_k_x_2[] = "_x";
 static const char __pyx_k_xyz[] = "xyz";
+static const char __pyx_k_acos[] = "_acos";
 static const char __pyx_k_base[] = "base";
+static const char __pyx_k_data[] = "data";
 static const char __pyx_k_dict[] = "__dict__";
+static const char __pyx_k_dxyz[] = "dxyz";
 static const char __pyx_k_eval[] = "eval";
 static const char __pyx_k_evec[] = "evec";
 static const char __pyx_k_file[] = "file";
 static const char __pyx_k_grid[] = "grid";
+static const char __pyx_k_gxyz[] = "gxyz";
 static const char __pyx_k_iter[] = "iter";
+static const char __pyx_k_kwds[] = "kwds";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_mode[] = "mode";
 static const char __pyx_k_name[] = "name";
@@ -2172,11 +2195,14 @@ static const char __pyx_k_prior[] = "prior";
 static const char __pyx_k_range[] = "range";
 static const char __pyx_k_shape[] = "shape";
 static const char __pyx_k_start[] = "start";
+static const char __pyx_k_stats[] = "stats";
 static const char __pyx_k_steps[] = "steps";
 static const char __pyx_k_theta[] = "theta";
 static const char __pyx_k_trace[] = "trace";
 static const char __pyx_k_trend[] = "trend";
 static const char __pyx_k_zeros[] = "zeros";
+static const char __pyx_k_append[] = "append";
+static const char __pyx_k_arccos[] = "arccos";
 static const char __pyx_k_double[] = "double";
 static const char __pyx_k_encode[] = "encode";
 static const char __pyx_k_format[] = "format";
@@ -2194,6 +2220,8 @@ static const char __pyx_k_unpack[] = "unpack";
 static const char __pyx_k_update[] = "update";
 static const char __pyx_k_vec2LL[] = "vec2LL";
 static const char __pyx_k_argsort[] = "argsort";
+static const char __pyx_k_deg2rad[] = "deg2rad";
+static const char __pyx_k_degrees[] = "degrees";
 static const char __pyx_k_fortran[] = "fortran";
 static const char __pyx_k_gammaln[] = "gammaln";
 static const char __pyx_k_gridArc[] = "gridArc";
@@ -2211,7 +2239,9 @@ static const char __pyx_k_nsamples[] = "nsamples";
 static const char __pyx_k_pyx_type[] = "__pyx_type";
 static const char __pyx_k_setstate[] = "__setstate__";
 static const char __pyx_k_TypeError[] = "TypeError";
+static const char __pyx_k_bandwidth[] = "bandwidth";
 static const char __pyx_k_enumerate[] = "enumerate";
+static const char __pyx_k_lookupRes[] = "lookupRes";
 static const char __pyx_k_nobserved[] = "nobserved";
 static const char __pyx_k_pyx_state[] = "__pyx_state";
 static const char __pyx_k_reduce_ex[] = "__reduce_ex__";
@@ -2223,9 +2253,11 @@ static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_MemoryError[] = "MemoryError";
 static const char __pyx_k_PickleError[] = "PickleError";
 static const char __pyx_k_gridSamples[] = "gridSamples";
+static const char __pyx_k_scipy_stats[] = "scipy.stats";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_constructCOV[] = "constructCOV";
 static const char __pyx_k_pyx_checksum[] = "__pyx_checksum";
+static const char __pyx_k_sphericalKDE[] = "sphericalKDE";
 static const char __pyx_k_stringsource[] = "stringsource";
 static const char __pyx_k_log_p_current[] = "log_p_current";
 static const char __pyx_k_proposalWidth[] = "proposalWidth";
@@ -2306,6 +2338,7 @@ static PyObject *__pyx_n_s_MemoryError;
 static PyObject *__pyx_kp_s_MemoryView_of_r_at_0x_x;
 static PyObject *__pyx_kp_s_MemoryView_of_r_object;
 static PyObject *__pyx_n_s_N;
+static PyObject *__pyx_n_s_N_2;
 static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_kp_s_Normal_must_be_a_list_of_3_compo;
 static PyObject *__pyx_n_b_O;
@@ -2313,6 +2346,7 @@ static PyObject *__pyx_kp_s_Out_of_bounds_on_buffer_access_a;
 static PyObject *__pyx_n_s_PickleError;
 static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_kp_s_Sampled_d_points_in_d_iterations;
+static PyObject *__pyx_n_s_T;
 static PyObject *__pyx_n_s_TypeError;
 static PyObject *__pyx_kp_s_Unable_to_convert_item_to_object;
 static PyObject *__pyx_n_s_ValueError;
@@ -2322,11 +2356,15 @@ static PyObject *__pyx_n_s_WA;
 static PyObject *__pyx_kp_s_Warning_MCMC_sampler_could_not_f;
 static PyObject *__pyx_n_s_X;
 static PyObject *__pyx_n_s__45;
+static PyObject *__pyx_n_s_acos;
 static PyObject *__pyx_n_s_allocate_buffer;
 static PyObject *__pyx_n_s_alpha;
+static PyObject *__pyx_n_s_append;
 static PyObject *__pyx_n_s_arc;
+static PyObject *__pyx_n_s_arccos;
 static PyObject *__pyx_n_s_argsort;
 static PyObject *__pyx_n_s_array;
+static PyObject *__pyx_n_s_bandwidth;
 static PyObject *__pyx_n_s_base;
 static PyObject *__pyx_n_s_bound;
 static PyObject *__pyx_n_s_c;
@@ -2339,6 +2377,9 @@ static PyObject *__pyx_kp_s_contiguous_and_direct;
 static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_cov;
 static PyObject *__pyx_n_s_cross;
+static PyObject *__pyx_n_s_data;
+static PyObject *__pyx_n_s_deg2rad;
+static PyObject *__pyx_n_s_degrees;
 static PyObject *__pyx_n_s_det;
 static PyObject *__pyx_n_s_df;
 static PyObject *__pyx_n_s_dict;
@@ -2346,6 +2387,7 @@ static PyObject *__pyx_n_s_dl;
 static PyObject *__pyx_n_s_double;
 static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_dtype_is_object;
+static PyObject *__pyx_n_s_dxyz;
 static PyObject *__pyx_n_s_e1;
 static PyObject *__pyx_n_s_e11;
 static PyObject *__pyx_n_s_e12;
@@ -2371,12 +2413,14 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_gammaln;
+static PyObject *__pyx_n_s_get;
 static PyObject *__pyx_n_s_getPosteriorDensityAt;
 static PyObject *__pyx_n_s_getstate;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
 static PyObject *__pyx_n_s_grid;
 static PyObject *__pyx_n_s_gridArc;
 static PyObject *__pyx_n_s_gridSamples;
+static PyObject *__pyx_n_s_gxyz;
 static PyObject *__pyx_n_s_hp;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
@@ -2387,6 +2431,7 @@ static PyObject *__pyx_kp_s_itemsize_0_for_cython_array;
 static PyObject *__pyx_n_s_iter;
 static PyObject *__pyx_n_s_ix;
 static PyObject *__pyx_n_s_iy;
+static PyObject *__pyx_n_s_kwds;
 static PyObject *__pyx_n_s_lat;
 static PyObject *__pyx_n_s_lat_2;
 static PyObject *__pyx_n_s_lik;
@@ -2401,6 +2446,7 @@ static PyObject *__pyx_n_s_log_p_current;
 static PyObject *__pyx_n_s_log_p_proposed;
 static PyObject *__pyx_n_s_lon;
 static PyObject *__pyx_n_s_lon_2;
+static PyObject *__pyx_n_s_lookupRes;
 static PyObject *__pyx_n_s_lsf;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_maxIter;
@@ -2429,6 +2475,7 @@ static PyObject *__pyx_n_s_ny;
 static PyObject *__pyx_n_s_nz;
 static PyObject *__pyx_n_s_obj;
 static PyObject *__pyx_n_s_out;
+static PyObject *__pyx_n_s_p;
 static PyObject *__pyx_n_s_p11;
 static PyObject *__pyx_n_s_p12;
 static PyObject *__pyx_n_s_p13;
@@ -2436,6 +2483,7 @@ static PyObject *__pyx_n_s_p22;
 static PyObject *__pyx_n_s_p23;
 static PyObject *__pyx_n_s_p33;
 static PyObject *__pyx_n_s_pack;
+static PyObject *__pyx_n_s_pdf;
 static PyObject *__pyx_n_s_phi;
 static PyObject *__pyx_n_s_pi;
 static PyObject *__pyx_n_s_pickle;
@@ -2465,6 +2513,7 @@ static PyObject *__pyx_n_s_reduce_cython;
 static PyObject *__pyx_n_s_reduce_ex;
 static PyObject *__pyx_n_s_samplePosteriorMCMC;
 static PyObject *__pyx_n_s_scipy_special;
+static PyObject *__pyx_n_s_scipy_stats;
 static PyObject *__pyx_n_s_setstate;
 static PyObject *__pyx_n_s_setstate_cython;
 static PyObject *__pyx_n_s_sf;
@@ -2472,7 +2521,9 @@ static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_sort;
 static PyObject *__pyx_n_s_sp;
+static PyObject *__pyx_n_s_sphericalKDE;
 static PyObject *__pyx_n_s_start;
+static PyObject *__pyx_n_s_stats;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_steps;
 static PyObject *__pyx_n_s_stop;
@@ -2481,6 +2532,7 @@ static PyObject *__pyx_kp_s_strided_and_direct_or_indirect;
 static PyObject *__pyx_kp_s_strided_and_indirect;
 static PyObject *__pyx_kp_s_stringsource;
 static PyObject *__pyx_n_s_struct;
+static PyObject *__pyx_n_s_t;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_theta;
 static PyObject *__pyx_n_s_trace;
@@ -2496,6 +2548,7 @@ static PyObject *__pyx_n_s_vec2LL;
 static PyObject *__pyx_n_s_vec2TrendPlunge;
 static PyObject *__pyx_n_s_verbose;
 static PyObject *__pyx_n_s_x;
+static PyObject *__pyx_n_s_x_2;
 static PyObject *__pyx_n_s_xyz;
 static PyObject *__pyx_n_s_y;
 static PyObject *__pyx_n_s_zeros;
@@ -2517,6 +2570,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_trend, double __pyx_v_plunge); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_lat, double __pyx_v_lon); /* proto */
 static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lat, PyObject *__pyx_v_lon); /* proto */
+static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_36sphericalKDE(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_grid, PyArrayObject *__pyx_v_data, double __pyx_v_bandwidth, PyObject *__pyx_v_kwds); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -2570,6 +2624,7 @@ static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
 static PyObject *__pyx_int_3;
 static PyObject *__pyx_int_50;
+static PyObject *__pyx_int_1000;
 static PyObject *__pyx_int_184977713;
 static PyObject *__pyx_int_neg_1;
 static __Pyx_memviewslice __pyx_k__7;
@@ -2632,11 +2687,12 @@ static PyObject *__pyx_tuple__70;
 static PyObject *__pyx_tuple__72;
 static PyObject *__pyx_tuple__74;
 static PyObject *__pyx_tuple__76;
-static PyObject *__pyx_tuple__77;
 static PyObject *__pyx_tuple__78;
 static PyObject *__pyx_tuple__79;
 static PyObject *__pyx_tuple__80;
 static PyObject *__pyx_tuple__81;
+static PyObject *__pyx_tuple__82;
+static PyObject *__pyx_tuple__83;
 static PyObject *__pyx_codeobj__47;
 static PyObject *__pyx_codeobj__49;
 static PyObject *__pyx_codeobj__51;
@@ -2652,9 +2708,10 @@ static PyObject *__pyx_codeobj__69;
 static PyObject *__pyx_codeobj__71;
 static PyObject *__pyx_codeobj__73;
 static PyObject *__pyx_codeobj__75;
-static PyObject *__pyx_codeobj__82;
+static PyObject *__pyx_codeobj__77;
+static PyObject *__pyx_codeobj__84;
 
-/* "pycompass/SNE/pdf.pyx":25
+/* "pycompass/SNE/pdf.pyx":27
  * Prior probability function
  * """
  * cpdef double pp(double phi, double theta, double nx, double ny, double nz):             # <<<<<<<<<<<<<<
@@ -2670,7 +2727,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("pp", 0);
 
-  /* "pycompass/SNE/pdf.pyx":27
+  /* "pycompass/SNE/pdf.pyx":29
  * cpdef double pp(double phi, double theta, double nx, double ny, double nz):
  *     #check normal is pointing downwards
  *     if nz > 0:             # <<<<<<<<<<<<<<
@@ -2680,7 +2737,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
   __pyx_t_1 = ((__pyx_v_nz > 0.0) != 0);
   if (__pyx_t_1) {
 
-    /* "pycompass/SNE/pdf.pyx":28
+    /* "pycompass/SNE/pdf.pyx":30
  *     #check normal is pointing downwards
  *     if nz > 0:
  *         nx = -nx             # <<<<<<<<<<<<<<
@@ -2689,7 +2746,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
  */
     __pyx_v_nx = (-__pyx_v_nx);
 
-    /* "pycompass/SNE/pdf.pyx":29
+    /* "pycompass/SNE/pdf.pyx":31
  *     if nz > 0:
  *         nx = -nx
  *         ny = -ny             # <<<<<<<<<<<<<<
@@ -2698,7 +2755,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
  */
     __pyx_v_ny = (-__pyx_v_ny);
 
-    /* "pycompass/SNE/pdf.pyx":30
+    /* "pycompass/SNE/pdf.pyx":32
  *         nx = -nx
  *         ny = -ny
  *         nz = -nz             # <<<<<<<<<<<<<<
@@ -2707,7 +2764,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
  */
     __pyx_v_nz = (-__pyx_v_nz);
 
-    /* "pycompass/SNE/pdf.pyx":27
+    /* "pycompass/SNE/pdf.pyx":29
  * cpdef double pp(double phi, double theta, double nx, double ny, double nz):
  *     #check normal is pointing downwards
  *     if nz > 0:             # <<<<<<<<<<<<<<
@@ -2716,7 +2773,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":33
+  /* "pycompass/SNE/pdf.pyx":35
  * 
  *     #calculate angle between normal vector and the normal estimate (phi,theta)
  *     cdef double _t = acos(nx*sin(phi)*cos(theta)+ny*cos(phi) * cos(theta)-nz*sin(theta))             # <<<<<<<<<<<<<<
@@ -2725,7 +2782,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
  */
   __pyx_v__t = acos(((((__pyx_v_nx * sin(__pyx_v_phi)) * cos(__pyx_v_theta)) + ((__pyx_v_ny * cos(__pyx_v_phi)) * cos(__pyx_v_theta))) - (__pyx_v_nz * sin(__pyx_v_theta))));
 
-  /* "pycompass/SNE/pdf.pyx":36
+  /* "pycompass/SNE/pdf.pyx":38
  * 
  *     #return prior-probability
  *     return sin(_t) / (2*pi) #n.b. 2 pi is normalizing factor so that integrates to 1 over dphi,dtheta             # <<<<<<<<<<<<<<
@@ -2735,7 +2792,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_pp(double __pyx_v_phi, double __pyx_v
   __pyx_r = (sin(__pyx_v__t) / (2.0 * __pyx_v_9pycompass_3SNE_3pdf_pi));
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":25
+  /* "pycompass/SNE/pdf.pyx":27
  * Prior probability function
  * """
  * cpdef double pp(double phi, double theta, double nx, double ny, double nz):             # <<<<<<<<<<<<<<
@@ -2789,29 +2846,29 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_1pp(PyObject *__pyx_self, PyObjec
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_theta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 1); __PYX_ERR(0, 25, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 1); __PYX_ERR(0, 27, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nx)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 2); __PYX_ERR(0, 25, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 2); __PYX_ERR(0, 27, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_ny)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 3); __PYX_ERR(0, 25, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 3); __PYX_ERR(0, 27, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nz)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 4); __PYX_ERR(0, 25, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, 4); __PYX_ERR(0, 27, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "pp") < 0)) __PYX_ERR(0, 25, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "pp") < 0)) __PYX_ERR(0, 27, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
       goto __pyx_L5_argtuple_error;
@@ -2822,15 +2879,15 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_1pp(PyObject *__pyx_self, PyObjec
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
     }
-    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
-    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
-    __pyx_v_nx = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_nx == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
-    __pyx_v_ny = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_ny == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
-    __pyx_v_nz = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_nz == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
+    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v_nx = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_nx == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v_ny = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_ny == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v_nz = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_nz == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 25, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("pp", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 27, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.pp", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2849,7 +2906,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_pp(CYTHON_UNUSED PyObject *__pyx_
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("pp", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_phi, __pyx_v_theta, __pyx_v_nx, __pyx_v_ny, __pyx_v_nz, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_phi, __pyx_v_theta, __pyx_v_nx, __pyx_v_ny, __pyx_v_nz, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 27, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2866,7 +2923,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_pp(CYTHON_UNUSED PyObject *__pyx_
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":41
+/* "pycompass/SNE/pdf.pyx":43
  * Evaluate prior probability over a grid.
  * """
  * def prior(np.ndarray grid, np.ndarray normal):             # <<<<<<<<<<<<<<
@@ -2906,11 +2963,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_3prior(PyObject *__pyx_self, PyOb
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_normal)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("prior", 1, 2, 2, 1); __PYX_ERR(0, 41, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("prior", 1, 2, 2, 1); __PYX_ERR(0, 43, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "prior") < 0)) __PYX_ERR(0, 41, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "prior") < 0)) __PYX_ERR(0, 43, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -2923,14 +2980,14 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_3prior(PyObject *__pyx_self, PyOb
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("prior", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 41, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("prior", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 43, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.prior", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 41, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_normal), __pyx_ptype_5numpy_ndarray, 1, "normal", 0))) __PYX_ERR(0, 41, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 43, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_normal), __pyx_ptype_5numpy_ndarray, 1, "normal", 0))) __PYX_ERR(0, 43, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_2prior(__pyx_self, __pyx_v_grid, __pyx_v_normal);
 
   /* function exit code */
@@ -2962,7 +3019,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   double __pyx_t_11;
   __Pyx_RefNannySetupContext("prior", 0);
 
-  /* "pycompass/SNE/pdf.pyx":43
+  /* "pycompass/SNE/pdf.pyx":45
  * def prior(np.ndarray grid, np.ndarray normal):
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:             # <<<<<<<<<<<<<<
@@ -2972,20 +3029,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (((__pyx_v_grid->dimensions[0]) != 2) != 0);
   if (__pyx_t_1) {
 
-    /* "pycompass/SNE/pdf.pyx":44
+    /* "pycompass/SNE/pdf.pyx":46
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")             # <<<<<<<<<<<<<<
  *     if normal.shape[0] != 3:
  *         raise ValueError("Normal must be a list of 3 components.")
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 44, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 44, __pyx_L1_error)
+    __PYX_ERR(0, 46, __pyx_L1_error)
 
-    /* "pycompass/SNE/pdf.pyx":43
+    /* "pycompass/SNE/pdf.pyx":45
  * def prior(np.ndarray grid, np.ndarray normal):
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:             # <<<<<<<<<<<<<<
@@ -2994,7 +3051,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":45
+  /* "pycompass/SNE/pdf.pyx":47
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if normal.shape[0] != 3:             # <<<<<<<<<<<<<<
@@ -3004,20 +3061,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (((__pyx_v_normal->dimensions[0]) != 3) != 0);
   if (__pyx_t_1) {
 
-    /* "pycompass/SNE/pdf.pyx":46
+    /* "pycompass/SNE/pdf.pyx":48
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if normal.shape[0] != 3:
  *         raise ValueError("Normal must be a list of 3 components.")             # <<<<<<<<<<<<<<
  * 
  *     #create location for output
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 46, __pyx_L1_error)
+    __PYX_ERR(0, 48, __pyx_L1_error)
 
-    /* "pycompass/SNE/pdf.pyx":45
+    /* "pycompass/SNE/pdf.pyx":47
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if normal.shape[0] != 3:             # <<<<<<<<<<<<<<
@@ -3026,49 +3083,49 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":49
+  /* "pycompass/SNE/pdf.pyx":51
  * 
  *     #create location for output
  *     cdef np.ndarray out = np.zeros([grid.shape[1]],dtype=np.double)             # <<<<<<<<<<<<<<
  * 
  *     #loop through grid and evaluate prior
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_4);
   __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_double); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_double); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_6) < 0) __PYX_ERR(0, 49, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_6) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 49, __pyx_L1_error)
+  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 51, __pyx_L1_error)
   __pyx_v_out = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":54
+  /* "pycompass/SNE/pdf.pyx":56
  *     cdef double trend, plunge
  *     cdef int i
  *     for i in range(grid.shape[1]):             # <<<<<<<<<<<<<<
@@ -3079,85 +3136,85 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_i = __pyx_t_8;
 
-    /* "pycompass/SNE/pdf.pyx":56
+    /* "pycompass/SNE/pdf.pyx":58
  *     for i in range(grid.shape[1]):
  *         #convert lat, lon to trend plunge
  *         plunge = -asin( cos(grid[0][i]) * cos(grid[1][i]) )             # <<<<<<<<<<<<<<
  *         trend = atan2( -sin(grid[0][i]),cos(grid[0][i]) * sin(grid[1][i]) ) - pi / 2
  * 
  */
-    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_4, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_4, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 56, __pyx_L1_error)
+    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 58, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_plunge = (-asin((cos(__pyx_t_9) * cos(__pyx_t_10))));
 
-    /* "pycompass/SNE/pdf.pyx":57
+    /* "pycompass/SNE/pdf.pyx":59
  *         #convert lat, lon to trend plunge
  *         plunge = -asin( cos(grid[0][i]) * cos(grid[1][i]) )
  *         trend = atan2( -sin(grid[0][i]),cos(grid[0][i]) * sin(grid[1][i]) ) - pi / 2             # <<<<<<<<<<<<<<
  * 
  *         out[i] = pp(trend,plunge,normal[0],normal[1],normal[2])
  */
-    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_4, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_4, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetItemInt(((PyObject *)__pyx_v_grid), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_6, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_11 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_11 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_11 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_11 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_trend = (atan2((-sin(__pyx_t_10)), (cos(__pyx_t_9) * sin(__pyx_t_11))) - (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0));
 
-    /* "pycompass/SNE/pdf.pyx":59
+    /* "pycompass/SNE/pdf.pyx":61
  *         trend = atan2( -sin(grid[0][i]),cos(grid[0][i]) * sin(grid[1][i]) ) - pi / 2
  * 
  *         out[i] = pp(trend,plunge,normal[0],normal[1],normal[2])             # <<<<<<<<<<<<<<
  *     return out
  * 
  */
-    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_11 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_11 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_11 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_11 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(((PyObject *)__pyx_v_normal), 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_trend, __pyx_v_plunge, __pyx_t_11, __pyx_t_9, __pyx_t_10, 0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
+    __pyx_t_4 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_trend, __pyx_v_plunge, __pyx_t_11, __pyx_t_9, __pyx_t_10, 0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), __pyx_v_i, __pyx_t_4, int, 1, __Pyx_PyInt_From_int, 0, 0, 0) < 0)) __PYX_ERR(0, 59, __pyx_L1_error)
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), __pyx_v_i, __pyx_t_4, int, 1, __Pyx_PyInt_From_int, 0, 0, 0) < 0)) __PYX_ERR(0, 61, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
 
-  /* "pycompass/SNE/pdf.pyx":60
+  /* "pycompass/SNE/pdf.pyx":62
  * 
  *         out[i] = pp(trend,plunge,normal[0],normal[1],normal[2])
  *     return out             # <<<<<<<<<<<<<<
@@ -3169,7 +3226,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   __pyx_r = ((PyObject *)__pyx_v_out);
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":41
+  /* "pycompass/SNE/pdf.pyx":43
  * Evaluate prior probability over a grid.
  * """
  * def prior(np.ndarray grid, np.ndarray normal):             # <<<<<<<<<<<<<<
@@ -3193,7 +3250,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_2prior(CYTHON_UNUSED PyObject *__
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":65
+/* "pycompass/SNE/pdf.pyx":67
  * 3D gamma function
  * """
  * cdef double logGamma3(double n):             # <<<<<<<<<<<<<<
@@ -3213,21 +3270,21 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
   double __pyx_t_7;
   __Pyx_RefNannySetupContext("logGamma3", 0);
 
-  /* "pycompass/SNE/pdf.pyx":66
+  /* "pycompass/SNE/pdf.pyx":68
  * """
  * cdef double logGamma3(double n):
  *     return (3./2.) * log(pi) + sp.gammaln(n) + sp.gammaln(n-0.5) + sp.gammaln(n-1.0)             # <<<<<<<<<<<<<<
  * 
  * """
  */
-  __pyx_t_1 = PyFloat_FromDouble(((3. / 2.) * log(__pyx_v_9pycompass_3SNE_3pdf_pi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(((3. / 2.) * log(__pyx_v_9pycompass_3SNE_3pdf_pi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_n); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_n); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_4))) {
@@ -3240,14 +3297,14 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     }
   }
   if (!__pyx_t_5) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_3};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -3256,35 +3313,35 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_3};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Add(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Add(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble((__pyx_v_n - 0.5)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble((__pyx_v_n - 0.5)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_6))) {
@@ -3297,14 +3354,14 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_6)) {
       PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_t_1};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -3313,35 +3370,35 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_6)) {
       PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_t_1};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3); __pyx_t_3 = NULL;
       __Pyx_GIVEREF(__pyx_t_1);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_1);
       __pyx_t_1 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = PyNumber_Add(__pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_6 = PyNumber_Add(__pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_sp); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_gammaln); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyFloat_FromDouble((__pyx_v_n - 1.0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble((__pyx_v_n - 1.0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_1 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -3354,14 +3411,14 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     }
   }
   if (!__pyx_t_1) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_4};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -3370,35 +3427,35 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_4};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else
     #endif
     {
-      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1); __pyx_t_1 = NULL;
       __Pyx_GIVEREF(__pyx_t_4);
       PyTuple_SET_ITEM(__pyx_t_3, 0+1, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = PyNumber_Add(__pyx_t_6, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_5 = PyNumber_Add(__pyx_t_6, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":65
+  /* "pycompass/SNE/pdf.pyx":67
  * 3D gamma function
  * """
  * cdef double logGamma3(double n):             # <<<<<<<<<<<<<<
@@ -3421,7 +3478,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logGamma3(double __pyx_v_n) {
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":72
+/* "pycompass/SNE/pdf.pyx":74
  * to be calculated once per observed covariance matrix (i.e. is independent of the P-matrix). Hence this is not speed critical.
  * """
  * cpdef double wishLSF(double[:,:] X, int n):             # <<<<<<<<<<<<<<
@@ -3441,22 +3498,22 @@ static double __pyx_f_9pycompass_3SNE_3pdf_wishLSF(__Pyx_memviewslice __pyx_v_X,
   double __pyx_t_6;
   __Pyx_RefNannySetupContext("wishLSF", 0);
 
-  /* "pycompass/SNE/pdf.pyx":73
+  /* "pycompass/SNE/pdf.pyx":75
  * """
  * cpdef double wishLSF(double[:,:] X, int n):
  *     return (n-4)*0.5*log(np.linalg.det(X)) - (n*3./2.) * log(2.) - logGamma3(n/2.)             # <<<<<<<<<<<<<<
  * 
  * """
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_det); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_det); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_X, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_X, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3469,14 +3526,14 @@ static double __pyx_f_9pycompass_3SNE_3pdf_wishLSF(__Pyx_memviewslice __pyx_v_X,
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -3485,31 +3542,31 @@ static double __pyx_f_9pycompass_3SNE_3pdf_wishLSF(__Pyx_memviewslice __pyx_v_X,
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 73, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 75, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = (((((__pyx_v_n - 4) * 0.5) * log(__pyx_t_6)) - (((__pyx_v_n * 3.) / 2.) * log(2.))) - __pyx_f_9pycompass_3SNE_3pdf_logGamma3((__pyx_v_n / 2.)));
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":72
+  /* "pycompass/SNE/pdf.pyx":74
  * to be calculated once per observed covariance matrix (i.e. is independent of the P-matrix). Hence this is not speed critical.
  * """
  * cpdef double wishLSF(double[:,:] X, int n):             # <<<<<<<<<<<<<<
@@ -3562,11 +3619,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_5wishLSF(PyObject *__pyx_self, Py
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("wishLSF", 1, 2, 2, 1); __PYX_ERR(0, 72, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("wishLSF", 1, 2, 2, 1); __PYX_ERR(0, 74, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wishLSF") < 0)) __PYX_ERR(0, 72, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wishLSF") < 0)) __PYX_ERR(0, 74, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -3574,12 +3631,12 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_5wishLSF(PyObject *__pyx_self, Py
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_X = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_X.memview)) __PYX_ERR(0, 72, __pyx_L3_error)
-    __pyx_v_n = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_n == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L3_error)
+    __pyx_v_X = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_X.memview)) __PYX_ERR(0, 74, __pyx_L3_error)
+    __pyx_v_n = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_n == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 74, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("wishLSF", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 72, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("wishLSF", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 74, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.wishLSF", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -3598,7 +3655,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_4wishLSF(CYTHON_UNUSED PyObject *
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("wishLSF", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, __pyx_v_n, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, __pyx_v_n, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3616,7 +3673,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_4wishLSF(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":92
+/* "pycompass/SNE/pdf.pyx":94
  * -the natural logarith of the probability density
  * """
  * cpdef double logWish(double[:,:] X, int n, double phi, double theta, double alpha, double e1, double e2, double e3, double lsf):             # <<<<<<<<<<<<<<
@@ -3665,7 +3722,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
   Py_ssize_t __pyx_t_18;
   __Pyx_RefNannySetupContext("logWish", 0);
 
-  /* "pycompass/SNE/pdf.pyx":97
+  /* "pycompass/SNE/pdf.pyx":99
  *     ####################################
  *     #eigenvector 3
  *     cdef double e13 = sin(phi) * cos(theta)             # <<<<<<<<<<<<<<
@@ -3674,7 +3731,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e13 = (sin(__pyx_v_phi) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":98
+  /* "pycompass/SNE/pdf.pyx":100
  *     #eigenvector 3
  *     cdef double e13 = sin(phi) * cos(theta)
  *     cdef double e23 = cos(phi) * cos(theta)             # <<<<<<<<<<<<<<
@@ -3683,7 +3740,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e23 = (cos(__pyx_v_phi) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":99
+  /* "pycompass/SNE/pdf.pyx":101
  *     cdef double e13 = sin(phi) * cos(theta)
  *     cdef double e23 = cos(phi) * cos(theta)
  *     cdef double e33 = -sin(theta)             # <<<<<<<<<<<<<<
@@ -3692,7 +3749,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e33 = (-sin(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":101
+  /* "pycompass/SNE/pdf.pyx":103
  *     cdef double e33 = -sin(theta)
  *     #eigenvector 2
  *     cdef double e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)             # <<<<<<<<<<<<<<
@@ -3701,7 +3758,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e12 = (((sin(__pyx_v_phi) * sin(__pyx_v_theta)) * sin(__pyx_v_alpha)) - (cos(__pyx_v_phi) * cos(__pyx_v_alpha)));
 
-  /* "pycompass/SNE/pdf.pyx":102
+  /* "pycompass/SNE/pdf.pyx":104
  *     #eigenvector 2
  *     cdef double e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)
  *     cdef double e22 = sin(phi) * cos(alpha) + sin(theta) * cos(phi) * sin(alpha)             # <<<<<<<<<<<<<<
@@ -3710,7 +3767,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e22 = ((sin(__pyx_v_phi) * cos(__pyx_v_alpha)) + ((sin(__pyx_v_theta) * cos(__pyx_v_phi)) * sin(__pyx_v_alpha)));
 
-  /* "pycompass/SNE/pdf.pyx":103
+  /* "pycompass/SNE/pdf.pyx":105
  *     cdef double e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)
  *     cdef double e22 = sin(phi) * cos(alpha) + sin(theta) * cos(phi) * sin(alpha)
  *     cdef double e32 = sin(alpha) * cos(theta)             # <<<<<<<<<<<<<<
@@ -3719,7 +3776,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e32 = (sin(__pyx_v_alpha) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":105
+  /* "pycompass/SNE/pdf.pyx":107
  *     cdef double e32 = sin(alpha) * cos(theta)
  *     #eigenvector 1 (calculate using cross product to avoid using un-necessary trig functions)
  *     cdef double e11 = e23*e32 - e33*e22             # <<<<<<<<<<<<<<
@@ -3728,7 +3785,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e11 = ((__pyx_v_e23 * __pyx_v_e32) - (__pyx_v_e33 * __pyx_v_e22));
 
-  /* "pycompass/SNE/pdf.pyx":106
+  /* "pycompass/SNE/pdf.pyx":108
  *     #eigenvector 1 (calculate using cross product to avoid using un-necessary trig functions)
  *     cdef double e11 = e23*e32 - e33*e22
  *     cdef double e21 = e33*e12 - e13*e32             # <<<<<<<<<<<<<<
@@ -3737,7 +3794,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e21 = ((__pyx_v_e33 * __pyx_v_e12) - (__pyx_v_e13 * __pyx_v_e32));
 
-  /* "pycompass/SNE/pdf.pyx":107
+  /* "pycompass/SNE/pdf.pyx":109
  *     cdef double e11 = e23*e32 - e33*e22
  *     cdef double e21 = e33*e12 - e13*e32
  *     cdef double e31 = e13*e22 - e23*e12             # <<<<<<<<<<<<<<
@@ -3746,7 +3803,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e31 = ((__pyx_v_e13 * __pyx_v_e22) - (__pyx_v_e23 * __pyx_v_e12));
 
-  /* "pycompass/SNE/pdf.pyx":110
+  /* "pycompass/SNE/pdf.pyx":112
  * 
  *     #calculate determinant of the scale matrix by multiplying it's eigens
  *     cdef double D = e1*e2*e3             # <<<<<<<<<<<<<<
@@ -3755,7 +3812,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_D = ((__pyx_v_e1 * __pyx_v_e2) * __pyx_v_e3);
 
-  /* "pycompass/SNE/pdf.pyx":115
+  /* "pycompass/SNE/pdf.pyx":117
  *     #(this will have eigenvectors corresponding to the above and eigenvalues of 1/e1,1/e2,1/e3)
  *     #(we compare this to the observed cov matrix
  *     e1 = 1.0/e1             # <<<<<<<<<<<<<<
@@ -3764,7 +3821,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e1 = (1.0 / __pyx_v_e1);
 
-  /* "pycompass/SNE/pdf.pyx":116
+  /* "pycompass/SNE/pdf.pyx":118
  *     #(we compare this to the observed cov matrix
  *     e1 = 1.0/e1
  *     e2 = 1.0/e2 #N.B. We invert the eigenvalues so we compute the inverse of P (called I). The eigenvectors will not change             # <<<<<<<<<<<<<<
@@ -3773,7 +3830,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e2 = (1.0 / __pyx_v_e2);
 
-  /* "pycompass/SNE/pdf.pyx":117
+  /* "pycompass/SNE/pdf.pyx":119
  *     e1 = 1.0/e1
  *     e2 = 1.0/e2 #N.B. We invert the eigenvalues so we compute the inverse of P (called I). The eigenvectors will not change
  *     e3 = 1.0/e3             # <<<<<<<<<<<<<<
@@ -3782,7 +3839,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_e3 = (1.0 / __pyx_v_e3);
 
-  /* "pycompass/SNE/pdf.pyx":120
+  /* "pycompass/SNE/pdf.pyx":122
  * 
  *     #calculate unique components of I
  *     cdef double i11 = (e1*e11**2 + e2*e12**2 + e3*e13**2)             # <<<<<<<<<<<<<<
@@ -3791,7 +3848,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i11 = (((__pyx_v_e1 * pow(__pyx_v_e11, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e12, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e13, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":121
+  /* "pycompass/SNE/pdf.pyx":123
  *     #calculate unique components of I
  *     cdef double i11 = (e1*e11**2 + e2*e12**2 + e3*e13**2)
  *     cdef double i22 = (e1*e21**2 + e2*e22**2 + e3*e23**2)             # <<<<<<<<<<<<<<
@@ -3800,7 +3857,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i22 = (((__pyx_v_e1 * pow(__pyx_v_e21, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e22, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e23, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":122
+  /* "pycompass/SNE/pdf.pyx":124
  *     cdef double i11 = (e1*e11**2 + e2*e12**2 + e3*e13**2)
  *     cdef double i22 = (e1*e21**2 + e2*e22**2 + e3*e23**2)
  *     cdef double i33 = (e1*e31**2 + e2*e32**2 + e3*e33**2)             # <<<<<<<<<<<<<<
@@ -3809,7 +3866,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i33 = (((__pyx_v_e1 * pow(__pyx_v_e31, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e32, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e33, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":123
+  /* "pycompass/SNE/pdf.pyx":125
  *     cdef double i22 = (e1*e21**2 + e2*e22**2 + e3*e23**2)
  *     cdef double i33 = (e1*e31**2 + e2*e32**2 + e3*e33**2)
  *     cdef double i12 = (e1*e11*e21 + e2*e12*e22 + e3*e13*e23)             # <<<<<<<<<<<<<<
@@ -3818,7 +3875,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i12 = ((((__pyx_v_e1 * __pyx_v_e11) * __pyx_v_e21) + ((__pyx_v_e2 * __pyx_v_e12) * __pyx_v_e22)) + ((__pyx_v_e3 * __pyx_v_e13) * __pyx_v_e23));
 
-  /* "pycompass/SNE/pdf.pyx":124
+  /* "pycompass/SNE/pdf.pyx":126
  *     cdef double i33 = (e1*e31**2 + e2*e32**2 + e3*e33**2)
  *     cdef double i12 = (e1*e11*e21 + e2*e12*e22 + e3*e13*e23)
  *     cdef double i13 = (e1*e11*e31 + e2*e12*e32 + e3*e13*e33)             # <<<<<<<<<<<<<<
@@ -3827,7 +3884,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i13 = ((((__pyx_v_e1 * __pyx_v_e11) * __pyx_v_e31) + ((__pyx_v_e2 * __pyx_v_e12) * __pyx_v_e32)) + ((__pyx_v_e3 * __pyx_v_e13) * __pyx_v_e33));
 
-  /* "pycompass/SNE/pdf.pyx":125
+  /* "pycompass/SNE/pdf.pyx":127
  *     cdef double i12 = (e1*e11*e21 + e2*e12*e22 + e3*e13*e23)
  *     cdef double i13 = (e1*e11*e31 + e2*e12*e32 + e3*e13*e33)
  *     cdef double i23 = (e1*e21*e31 + e2*e22*e32 + e3*e23*e33)             # <<<<<<<<<<<<<<
@@ -3836,7 +3893,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
  */
   __pyx_v_i23 = ((((__pyx_v_e1 * __pyx_v_e21) * __pyx_v_e31) + ((__pyx_v_e2 * __pyx_v_e22) * __pyx_v_e32)) + ((__pyx_v_e3 * __pyx_v_e23) * __pyx_v_e33));
 
-  /* "pycompass/SNE/pdf.pyx":129
+  /* "pycompass/SNE/pdf.pyx":131
  * 
  *     #compute the trace of I times X
  *     cdef double trIX = (i11*X[0,0]+i12*X[1,0]+i13*X[2,0])+(i12*X[0,1]+i22*X[1,1]+i23*X[2,1])+(i13*X[0,2]+i23*X[1,2]+i33*X[2,2])             # <<<<<<<<<<<<<<
@@ -3863,7 +3920,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
   __pyx_t_18 = 2;
   __pyx_v_trIX = (((((__pyx_v_i11 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_1 * __pyx_v_X.strides[0]) ) + __pyx_t_2 * __pyx_v_X.strides[1]) )))) + (__pyx_v_i12 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_3 * __pyx_v_X.strides[0]) ) + __pyx_t_4 * __pyx_v_X.strides[1]) ))))) + (__pyx_v_i13 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_5 * __pyx_v_X.strides[0]) ) + __pyx_t_6 * __pyx_v_X.strides[1]) ))))) + (((__pyx_v_i12 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_7 * __pyx_v_X.strides[0]) ) + __pyx_t_8 * __pyx_v_X.strides[1]) )))) + (__pyx_v_i22 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_9 * __pyx_v_X.strides[0]) ) + __pyx_t_10 * __pyx_v_X.strides[1]) ))))) + (__pyx_v_i23 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_11 * __pyx_v_X.strides[0]) ) + __pyx_t_12 * __pyx_v_X.strides[1]) )))))) + (((__pyx_v_i13 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_13 * __pyx_v_X.strides[0]) ) + __pyx_t_14 * __pyx_v_X.strides[1]) )))) + (__pyx_v_i23 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_15 * __pyx_v_X.strides[0]) ) + __pyx_t_16 * __pyx_v_X.strides[1]) ))))) + (__pyx_v_i33 * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_X.data + __pyx_t_17 * __pyx_v_X.strides[0]) ) + __pyx_t_18 * __pyx_v_X.strides[1]) ))))));
 
-  /* "pycompass/SNE/pdf.pyx":134
+  /* "pycompass/SNE/pdf.pyx":136
  *     #=scale factor - trace( I x icov /2) - (n/2) log (D), where D is the determinant of the scale matrix and I is its inverse
  *     #=scale factor - (1/2) * (trace(I x icov) - n * log(D))
  *     return lsf - 0.5 * (trIX + n*log(D))             # <<<<<<<<<<<<<<
@@ -3873,7 +3930,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_logWish(__Pyx_memviewslice __pyx_v_X,
   __pyx_r = (__pyx_v_lsf - (0.5 * (__pyx_v_trIX + (__pyx_v_n * log(__pyx_v_D)))));
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":92
+  /* "pycompass/SNE/pdf.pyx":94
  * -the natural logarith of the probability density
  * """
  * cpdef double logWish(double[:,:] X, int n, double phi, double theta, double alpha, double e1, double e2, double e3, double lsf):             # <<<<<<<<<<<<<<
@@ -3939,53 +3996,53 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_7logWish(PyObject *__pyx_self, Py
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 1); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 1); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_phi)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 2); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 2); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_theta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 3); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 3); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_alpha)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 4); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 4); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
         if (likely((values[5] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e1)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 5); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 5); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  6:
         if (likely((values[6] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e2)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 6); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 6); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  7:
         if (likely((values[7] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e3)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 7); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 7); __PYX_ERR(0, 94, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  8:
         if (likely((values[8] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_lsf)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 8); __PYX_ERR(0, 92, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, 8); __PYX_ERR(0, 94, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "logWish") < 0)) __PYX_ERR(0, 92, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "logWish") < 0)) __PYX_ERR(0, 94, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 9) {
       goto __pyx_L5_argtuple_error;
@@ -4000,19 +4057,19 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_7logWish(PyObject *__pyx_self, Py
       values[7] = PyTuple_GET_ITEM(__pyx_args, 7);
       values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
     }
-    __pyx_v_X = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_X.memview)) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_n = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_n == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_alpha = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_e1 = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_e1 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_e2 = __pyx_PyFloat_AsDouble(values[6]); if (unlikely((__pyx_v_e2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_e3 = __pyx_PyFloat_AsDouble(values[7]); if (unlikely((__pyx_v_e3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
-    __pyx_v_lsf = __pyx_PyFloat_AsDouble(values[8]); if (unlikely((__pyx_v_lsf == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 92, __pyx_L3_error)
+    __pyx_v_X = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_X.memview)) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_n = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_n == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_alpha = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_e1 = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_e1 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_e2 = __pyx_PyFloat_AsDouble(values[6]); if (unlikely((__pyx_v_e2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_e3 = __pyx_PyFloat_AsDouble(values[7]); if (unlikely((__pyx_v_e3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
+    __pyx_v_lsf = __pyx_PyFloat_AsDouble(values[8]); if (unlikely((__pyx_v_lsf == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 94, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 92, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("logWish", 1, 9, 9, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 94, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.logWish", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -4031,7 +4088,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_6logWish(CYTHON_UNUSED PyObject *
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("logWish", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, __pyx_v_n, __pyx_v_phi, __pyx_v_theta, __pyx_v_alpha, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_lsf, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, __pyx_v_n, __pyx_v_phi, __pyx_v_theta, __pyx_v_alpha, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_lsf, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 94, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4049,7 +4106,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_6logWish(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":149
+/* "pycompass/SNE/pdf.pyx":151
  *  -lsf = the log scale factor to use in the wishart distribution.
  * """
  * cdef double likExp1D(double[:,:] X, int n, double phi, double theta, double e1, double e2, double e3, int steps, double lsf):             # <<<<<<<<<<<<<<
@@ -4069,7 +4126,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("likExp1D", 0);
 
-  /* "pycompass/SNE/pdf.pyx":151
+  /* "pycompass/SNE/pdf.pyx":153
  * cdef double likExp1D(double[:,:] X, int n, double phi, double theta, double e1, double e2, double e3, int steps, double lsf):
  *     #evaluate integral over alpha = 0 to pi
  *     cdef double pd0 = exp(logWish(X,n,phi,theta,0,e1,e2,e3,lsf))             # <<<<<<<<<<<<<<
@@ -4078,7 +4135,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
   __pyx_v_pd0 = exp(__pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, __pyx_v_n, __pyx_v_phi, __pyx_v_theta, 0.0, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_lsf, 0));
 
-  /* "pycompass/SNE/pdf.pyx":152
+  /* "pycompass/SNE/pdf.pyx":154
  *     #evaluate integral over alpha = 0 to pi
  *     cdef double pd0 = exp(logWish(X,n,phi,theta,0,e1,e2,e3,lsf))
  *     cdef double pd1 = 0.0             # <<<<<<<<<<<<<<
@@ -4087,7 +4144,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
   __pyx_v_pd1 = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":153
+  /* "pycompass/SNE/pdf.pyx":155
  *     cdef double pd0 = exp(logWish(X,n,phi,theta,0,e1,e2,e3,lsf))
  *     cdef double pd1 = 0.0
  *     cdef double sum= 0.0             # <<<<<<<<<<<<<<
@@ -4096,7 +4153,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
   __pyx_v_sum = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":154
+  /* "pycompass/SNE/pdf.pyx":156
  *     cdef double pd1 = 0.0
  *     cdef double sum= 0.0
  *     cdef double dA = pi / steps             # <<<<<<<<<<<<<<
@@ -4105,7 +4162,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
   __pyx_v_dA = (__pyx_v_9pycompass_3SNE_3pdf_pi / __pyx_v_steps);
 
-  /* "pycompass/SNE/pdf.pyx":156
+  /* "pycompass/SNE/pdf.pyx":158
  *     cdef double dA = pi / steps
  *     cdef int i
  *     for i in range(steps):             # <<<<<<<<<<<<<<
@@ -4116,7 +4173,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
   for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_i = __pyx_t_2;
 
-    /* "pycompass/SNE/pdf.pyx":158
+    /* "pycompass/SNE/pdf.pyx":160
  *     for i in range(steps):
  *        #calculate next integration point
  *        pd1 = exp(logWish(X,n,phi,theta,(i+1)*dA,e1,e2,e3,lsf))             # <<<<<<<<<<<<<<
@@ -4125,7 +4182,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
     __pyx_v_pd1 = exp(__pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, __pyx_v_n, __pyx_v_phi, __pyx_v_theta, ((__pyx_v_i + 1) * __pyx_v_dA), __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_lsf, 0));
 
-    /* "pycompass/SNE/pdf.pyx":161
+    /* "pycompass/SNE/pdf.pyx":163
  * 
  *        #compute area between current/next integration point (and sum it)
  *        sum += dA*pd0 + dA*(pd1-pd0)*0.5             # <<<<<<<<<<<<<<
@@ -4134,7 +4191,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
  */
     __pyx_v_sum = (__pyx_v_sum + ((__pyx_v_dA * __pyx_v_pd0) + ((__pyx_v_dA * (__pyx_v_pd1 - __pyx_v_pd0)) * 0.5)));
 
-    /* "pycompass/SNE/pdf.pyx":164
+    /* "pycompass/SNE/pdf.pyx":166
  * 
  *        #move on to next point
  *        pd0=pd1             # <<<<<<<<<<<<<<
@@ -4144,7 +4201,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
     __pyx_v_pd0 = __pyx_v_pd1;
   }
 
-  /* "pycompass/SNE/pdf.pyx":167
+  /* "pycompass/SNE/pdf.pyx":169
  * 
  *     #done :)
  *     return sum             # <<<<<<<<<<<<<<
@@ -4154,7 +4211,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
   __pyx_r = __pyx_v_sum;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":149
+  /* "pycompass/SNE/pdf.pyx":151
  *  -lsf = the log scale factor to use in the wishart distribution.
  * """
  * cdef double likExp1D(double[:,:] X, int n, double phi, double theta, double e1, double e2, double e3, int steps, double lsf):             # <<<<<<<<<<<<<<
@@ -4168,7 +4225,7 @@ static double __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__Pyx_memviewslice __pyx_v_X
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":178
+/* "pycompass/SNE/pdf.pyx":180
  *  -steps = the number of integration steps to used. Default is 25.
  * """
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):             # <<<<<<<<<<<<<<
@@ -4214,13 +4271,13 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_9likelihoodExp1D(PyObject *__pyx_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_cov)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, 1); __PYX_ERR(0, 178, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, 1); __PYX_ERR(0, 180, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nobserved)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, 2); __PYX_ERR(0, 178, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, 2); __PYX_ERR(0, 180, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
@@ -4230,7 +4287,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_9likelihoodExp1D(PyObject *__pyx_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "likelihoodExp1D") < 0)) __PYX_ERR(0, 178, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "likelihoodExp1D") < 0)) __PYX_ERR(0, 180, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4245,23 +4302,23 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_9likelihoodExp1D(PyObject *__pyx_
     }
     __pyx_v_grid = ((PyArrayObject *)values[0]);
     __pyx_v_cov = ((PyArrayObject *)values[1]);
-    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 178, __pyx_L3_error)
+    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 180, __pyx_L3_error)
     if (values[3]) {
-      __pyx_v_steps = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 178, __pyx_L3_error)
+      __pyx_v_steps = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 180, __pyx_L3_error)
     } else {
       __pyx_v_steps = ((int)25);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 178, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("likelihoodExp1D", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 180, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.likelihoodExp1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 178, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 178, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 180, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 180, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(__pyx_self, __pyx_v_grid, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_steps);
 
   /* function exit code */
@@ -4314,7 +4371,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   Py_ssize_t __pyx_t_24;
   __Pyx_RefNannySetupContext("likelihoodExp1D", 0);
 
-  /* "pycompass/SNE/pdf.pyx":180
+  /* "pycompass/SNE/pdf.pyx":182
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:             # <<<<<<<<<<<<<<
@@ -4324,20 +4381,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   __pyx_t_1 = (((__pyx_v_grid->dimensions[0]) != 2) != 0);
   if (__pyx_t_1) {
 
-    /* "pycompass/SNE/pdf.pyx":181
+    /* "pycompass/SNE/pdf.pyx":183
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")             # <<<<<<<<<<<<<<
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:
  *         raise ValueError("Inverse covariance must be a 3x3 matrix.")
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 183, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 181, __pyx_L1_error)
+    __PYX_ERR(0, 183, __pyx_L1_error)
 
-    /* "pycompass/SNE/pdf.pyx":180
+    /* "pycompass/SNE/pdf.pyx":182
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:             # <<<<<<<<<<<<<<
@@ -4346,7 +4403,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":182
+  /* "pycompass/SNE/pdf.pyx":184
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:             # <<<<<<<<<<<<<<
@@ -4364,20 +4421,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "pycompass/SNE/pdf.pyx":183
+    /* "pycompass/SNE/pdf.pyx":185
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:
  *         raise ValueError("Inverse covariance must be a 3x3 matrix.")             # <<<<<<<<<<<<<<
  * 
  * 
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 183, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 183, __pyx_L1_error)
+    __PYX_ERR(0, 185, __pyx_L1_error)
 
-    /* "pycompass/SNE/pdf.pyx":182
+    /* "pycompass/SNE/pdf.pyx":184
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:             # <<<<<<<<<<<<<<
@@ -4386,38 +4443,38 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":187
+  /* "pycompass/SNE/pdf.pyx":189
  * 
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved             # <<<<<<<<<<<<<<
  * 
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  */
-  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 187, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 187, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_5 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_4);
-  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 187, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_X = __pyx_t_5;
   __pyx_t_5.memview = NULL;
   __pyx_t_5.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":190
+  /* "pycompass/SNE/pdf.pyx":192
  * 
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)             # <<<<<<<<<<<<<<
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 190, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 190, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_eig); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 190, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_eig); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_6 = NULL;
@@ -4431,13 +4488,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     }
   }
   if (!__pyx_t_6) {
-    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 192, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_6, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 192, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_4);
     } else
@@ -4445,19 +4502,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_6, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 192, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_4);
     } else
     #endif
     {
-      __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 190, __pyx_L1_error)
+      __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 192, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __pyx_t_6 = NULL;
       __Pyx_INCREF(((PyObject *)__pyx_v_cov));
       __Pyx_GIVEREF(((PyObject *)__pyx_v_cov));
       PyTuple_SET_ITEM(__pyx_t_7, 0+1, ((PyObject *)__pyx_v_cov));
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 192, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     }
@@ -4473,7 +4530,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 190, __pyx_L1_error)
+      __PYX_ERR(0, 192, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -4486,15 +4543,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     __Pyx_INCREF(__pyx_t_2);
     __Pyx_INCREF(__pyx_t_7);
     #else
-    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 190, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 192, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_7 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 190, __pyx_L1_error)
+    __pyx_t_7 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 192, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     #endif
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_6 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 190, __pyx_L1_error)
+    __pyx_t_6 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 192, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_8 = Py_TYPE(__pyx_t_6)->tp_iternext;
@@ -4502,7 +4559,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     __Pyx_GOTREF(__pyx_t_2);
     index = 1; __pyx_t_7 = __pyx_t_8(__pyx_t_6); if (unlikely(!__pyx_t_7)) goto __pyx_L7_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_7);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_8(__pyx_t_6), 2) < 0) __PYX_ERR(0, 190, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_8(__pyx_t_6), 2) < 0) __PYX_ERR(0, 192, __pyx_L1_error)
     __pyx_t_8 = NULL;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     goto __pyx_L8_unpacking_done;
@@ -4510,7 +4567,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_t_8 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 190, __pyx_L1_error)
+    __PYX_ERR(0, 192, __pyx_L1_error)
     __pyx_L8_unpacking_done:;
   }
   __pyx_v_eval = __pyx_t_2;
@@ -4518,16 +4575,16 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   __pyx_v_evec = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":191
+  /* "pycompass/SNE/pdf.pyx":193
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_t_7 = PyObject_GetItem(__pyx_v_eval, __pyx_slice__5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 191, __pyx_L1_error)
+  __pyx_t_7 = PyObject_GetItem(__pyx_v_eval, __pyx_slice__5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_sort); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 191, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_sort); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_t_7 = NULL;
@@ -4541,69 +4598,69 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     }
   }
   if (__pyx_t_7) {
-    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_7); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 191, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_7); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   } else {
-    __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 191, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":192
+  /* "pycompass/SNE/pdf.pyx":194
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]             # <<<<<<<<<<<<<<
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]
  */
-  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 194, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 194, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_e1 = __pyx_t_9;
 
-  /* "pycompass/SNE/pdf.pyx":193
+  /* "pycompass/SNE/pdf.pyx":195
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]             # <<<<<<<<<<<<<<
  *     cdef double e3 = eval[2]
  * 
  */
-  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 195, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 193, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 195, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_e2 = __pyx_t_9;
 
-  /* "pycompass/SNE/pdf.pyx":194
+  /* "pycompass/SNE/pdf.pyx":196
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]             # <<<<<<<<<<<<<<
  * 
  *     #create location for output
  */
-  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 194, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 194, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_e3 = __pyx_t_9;
 
-  /* "pycompass/SNE/pdf.pyx":197
+  /* "pycompass/SNE/pdf.pyx":199
  * 
  *     #create location for output
  *     cdef double[:] out = np.zeros([grid.shape[1]])             # <<<<<<<<<<<<<<
  * 
  *     #loop through grid and evaluate likelihood
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 197, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 199, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 197, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 199, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 197, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 199, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = PyList_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 197, __pyx_L1_error)
+  __pyx_t_6 = PyList_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 199, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
@@ -4619,14 +4676,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     }
   }
   if (!__pyx_t_2) {
-    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 197, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 199, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_GOTREF(__pyx_t_4);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_7)) {
       PyObject *__pyx_temp[2] = {__pyx_t_2, __pyx_t_6};
-      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 197, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 199, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -4635,45 +4692,45 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
       PyObject *__pyx_temp[2] = {__pyx_t_2, __pyx_t_6};
-      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 197, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 199, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else
     #endif
     {
-      __pyx_t_10 = PyTuple_New(1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 197, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 199, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_2); __pyx_t_2 = NULL;
       __Pyx_GIVEREF(__pyx_t_6);
       PyTuple_SET_ITEM(__pyx_t_10, 0+1, __pyx_t_6);
       __pyx_t_6 = 0;
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_10, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 197, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_10, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 199, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_4);
-  if (unlikely(!__pyx_t_11.memview)) __PYX_ERR(0, 197, __pyx_L1_error)
+  if (unlikely(!__pyx_t_11.memview)) __PYX_ERR(0, 199, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_out = __pyx_t_11;
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":201
+  /* "pycompass/SNE/pdf.pyx":203
  *     #loop through grid and evaluate likelihood
  *     cdef double trend, plunge
  *     cdef lsf = wishLSF(X,nobserved-1) #calculate the wishart scale factor             # <<<<<<<<<<<<<<
  *     cdef double[:,:] points = grid #convert grid to native c-type for speed
  *     cdef int i
  */
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, (__pyx_v_nobserved - 1), 0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 201, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, (__pyx_v_nobserved - 1), 0)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_v_lsf = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":202
+  /* "pycompass/SNE/pdf.pyx":204
  *     cdef double trend, plunge
  *     cdef lsf = wishLSF(X,nobserved-1) #calculate the wishart scale factor
  *     cdef double[:,:] points = grid #convert grid to native c-type for speed             # <<<<<<<<<<<<<<
@@ -4681,12 +4738,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
  *     for i in range(grid.shape[1]):
  */
   __pyx_t_5 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(((PyObject *)__pyx_v_grid));
-  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 202, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 204, __pyx_L1_error)
   __pyx_v_points = __pyx_t_5;
   __pyx_t_5.memview = NULL;
   __pyx_t_5.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":204
+  /* "pycompass/SNE/pdf.pyx":206
  *     cdef double[:,:] points = grid #convert grid to native c-type for speed
  *     cdef int i
  *     for i in range(grid.shape[1]):             # <<<<<<<<<<<<<<
@@ -4697,7 +4754,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   for (__pyx_t_13 = 0; __pyx_t_13 < __pyx_t_12; __pyx_t_13+=1) {
     __pyx_v_i = __pyx_t_13;
 
-    /* "pycompass/SNE/pdf.pyx":206
+    /* "pycompass/SNE/pdf.pyx":208
  *     for i in range(grid.shape[1]):
  *         #convert lat, lon to trend plunge
  *         plunge = -asin( cos(points[0,i]) * cos(points[1,i]) )             # <<<<<<<<<<<<<<
@@ -4710,7 +4767,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     __pyx_t_17 = __pyx_v_i;
     __pyx_v_plunge = (-asin((cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_points.data + __pyx_t_14 * __pyx_v_points.strides[0]) ) + __pyx_t_15 * __pyx_v_points.strides[1]) )))) * cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_points.data + __pyx_t_16 * __pyx_v_points.strides[0]) ) + __pyx_t_17 * __pyx_v_points.strides[1]) )))))));
 
-    /* "pycompass/SNE/pdf.pyx":207
+    /* "pycompass/SNE/pdf.pyx":209
  *         #convert lat, lon to trend plunge
  *         plunge = -asin( cos(points[0,i]) * cos(points[1,i]) )
  *         trend = atan2( -sin(points[0,i]),cos(points[0,i]) * sin(points[1,i]) ) - pi / 2.0             # <<<<<<<<<<<<<<
@@ -4725,19 +4782,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
     __pyx_t_23 = __pyx_v_i;
     __pyx_v_trend = (atan2((-sin((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_points.data + __pyx_t_18 * __pyx_v_points.strides[0]) ) + __pyx_t_19 * __pyx_v_points.strides[1]) ))))), (cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_points.data + __pyx_t_20 * __pyx_v_points.strides[0]) ) + __pyx_t_21 * __pyx_v_points.strides[1]) )))) * sin((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_points.data + __pyx_t_22 * __pyx_v_points.strides[0]) ) + __pyx_t_23 * __pyx_v_points.strides[1]) )))))) - (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0));
 
-    /* "pycompass/SNE/pdf.pyx":209
+    /* "pycompass/SNE/pdf.pyx":211
  *         trend = atan2( -sin(points[0,i]),cos(points[0,i]) * sin(points[1,i]) ) - pi / 2.0
  * 
  *         out[i] = likExp1D(X,nobserved-1,trend,plunge,e1,e2,e3,steps,lsf)             # <<<<<<<<<<<<<<
  *     return out
  * 
  */
-    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_v_lsf); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 209, __pyx_L1_error)
+    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_v_lsf); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 211, __pyx_L1_error)
     __pyx_t_24 = __pyx_v_i;
     *((double *) ( /* dim=0 */ (__pyx_v_out.data + __pyx_t_24 * __pyx_v_out.strides[0]) )) = __pyx_f_9pycompass_3SNE_3pdf_likExp1D(__pyx_v_X, (__pyx_v_nobserved - 1), __pyx_v_trend, __pyx_v_plunge, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_steps, __pyx_t_9);
   }
 
-  /* "pycompass/SNE/pdf.pyx":210
+  /* "pycompass/SNE/pdf.pyx":212
  * 
  *         out[i] = likExp1D(X,nobserved-1,trend,plunge,e1,e2,e3,steps,lsf)
  *     return out             # <<<<<<<<<<<<<<
@@ -4745,13 +4802,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __pyx_memoryview_fromslice(__pyx_v_out, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 210, __pyx_L1_error)
+  __pyx_t_4 = __pyx_memoryview_fromslice(__pyx_v_out, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 212, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":178
+  /* "pycompass/SNE/pdf.pyx":180
  *  -steps = the number of integration steps to used. Default is 25.
  * """
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):             # <<<<<<<<<<<<<<
@@ -4782,7 +4839,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_8likelihoodExp1D(CYTHON_UNUSED Py
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":221
+/* "pycompass/SNE/pdf.pyx":223
  *  -normal = the outcrop normal vector used to calculate the prior.
  * """
  * def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray normal, int steps=25 ):             # <<<<<<<<<<<<<<
@@ -4831,19 +4888,19 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_11posteriorExp1D(PyObject *__pyx_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_cov)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 1); __PYX_ERR(0, 221, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 1); __PYX_ERR(0, 223, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nobserved)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 2); __PYX_ERR(0, 221, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 2); __PYX_ERR(0, 223, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_normal)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 3); __PYX_ERR(0, 221, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, 3); __PYX_ERR(0, 223, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
@@ -4853,7 +4910,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_11posteriorExp1D(PyObject *__pyx_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "posteriorExp1D") < 0)) __PYX_ERR(0, 221, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "posteriorExp1D") < 0)) __PYX_ERR(0, 223, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4869,25 +4926,25 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_11posteriorExp1D(PyObject *__pyx_
     }
     __pyx_v_grid = ((PyArrayObject *)values[0]);
     __pyx_v_cov = ((PyArrayObject *)values[1]);
-    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 221, __pyx_L3_error)
+    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 223, __pyx_L3_error)
     __pyx_v_normal = ((PyArrayObject *)values[3]);
     if (values[4]) {
-      __pyx_v_steps = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 221, __pyx_L3_error)
+      __pyx_v_steps = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 223, __pyx_L3_error)
     } else {
       __pyx_v_steps = ((int)25);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 221, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("posteriorExp1D", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 223, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.posteriorExp1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 221, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 221, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_normal), __pyx_ptype_5numpy_ndarray, 1, "normal", 0))) __PYX_ERR(0, 221, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 223, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 223, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_normal), __pyx_ptype_5numpy_ndarray, 1, "normal", 0))) __PYX_ERR(0, 223, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(__pyx_self, __pyx_v_grid, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_normal, __pyx_v_steps);
 
   /* function exit code */
@@ -4911,14 +4968,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   PyObject *__pyx_t_5 = NULL;
   __Pyx_RefNannySetupContext("posteriorExp1D", 0);
 
-  /* "pycompass/SNE/pdf.pyx":223
+  /* "pycompass/SNE/pdf.pyx":225
  * def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray normal, int steps=25 ):
  *     #evaluate prior and likelihood
  *     pr = prior(grid,normal)             # <<<<<<<<<<<<<<
  *     lik = likelihoodExp1D(grid,cov,nobserved,steps=steps)
  * 
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_prior); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 223, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_prior); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 225, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -4935,7 +4992,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, ((PyObject *)__pyx_v_grid), ((PyObject *)__pyx_v_normal)};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 223, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 225, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
@@ -4943,13 +5000,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, ((PyObject *)__pyx_v_grid), ((PyObject *)__pyx_v_normal)};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 223, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 225, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
   #endif
   {
-    __pyx_t_5 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 223, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 225, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     if (__pyx_t_3) {
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3); __pyx_t_3 = NULL;
@@ -4960,7 +5017,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
     __Pyx_INCREF(((PyObject *)__pyx_v_normal));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_normal));
     PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_4, ((PyObject *)__pyx_v_normal));
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 223, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 225, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
@@ -4968,18 +5025,18 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   __pyx_v_pr = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":224
+  /* "pycompass/SNE/pdf.pyx":226
  *     #evaluate prior and likelihood
  *     pr = prior(grid,normal)
  *     lik = likelihoodExp1D(grid,cov,nobserved,steps=steps)             # <<<<<<<<<<<<<<
  * 
  *     #return the product of the two
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_likelihoodExp1D); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_likelihoodExp1D); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(((PyObject *)__pyx_v_grid));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_grid));
@@ -4990,13 +5047,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_steps); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_steps); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_steps, __pyx_t_3) < 0) __PYX_ERR(0, 224, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_steps, __pyx_t_3) < 0) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_5, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 224, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_5, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -5004,7 +5061,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   __pyx_v_lik = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":227
+  /* "pycompass/SNE/pdf.pyx":229
  * 
  *     #return the product of the two
  *     return pr * lik             # <<<<<<<<<<<<<<
@@ -5012,13 +5069,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = PyNumber_Multiply(__pyx_v_pr, __pyx_v_lik); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 227, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_Multiply(__pyx_v_pr, __pyx_v_lik); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 229, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":221
+  /* "pycompass/SNE/pdf.pyx":223
  *  -normal = the outcrop normal vector used to calculate the prior.
  * """
  * def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray normal, int steps=25 ):             # <<<<<<<<<<<<<<
@@ -5042,7 +5099,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_10posteriorExp1D(CYTHON_UNUSED Py
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":233
+/* "pycompass/SNE/pdf.pyx":235
  * Compute the posterior probability at the specified point.
  * """
  * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
@@ -5094,25 +5151,25 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt(PyObject 
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_theta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 1); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 1); __PYX_ERR(0, 235, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_cov)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 2); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 2); __PYX_ERR(0, 235, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nobserved)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 3); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 3); __PYX_ERR(0, 235, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 4); __PYX_ERR(0, 233, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, 4); __PYX_ERR(0, 235, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
@@ -5122,7 +5179,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt(PyObject 
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "getPosteriorDensityAt") < 0)) __PYX_ERR(0, 233, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "getPosteriorDensityAt") < 0)) __PYX_ERR(0, 235, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -5137,27 +5194,27 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_13getPosteriorDensityAt(PyObject 
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 233, __pyx_L3_error)
-    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 233, __pyx_L3_error)
+    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 235, __pyx_L3_error)
+    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 235, __pyx_L3_error)
     __pyx_v_cov = ((PyArrayObject *)values[2]);
-    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 233, __pyx_L3_error)
+    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 235, __pyx_L3_error)
     __pyx_v_n = ((PyArrayObject *)values[4]);
     if (values[5]) {
-      __pyx_v_steps = __Pyx_PyInt_As_int(values[5]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 233, __pyx_L3_error)
+      __pyx_v_steps = __Pyx_PyInt_As_int(values[5]); if (unlikely((__pyx_v_steps == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 235, __pyx_L3_error)
     } else {
       __pyx_v_steps = ((int)0x1F4);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 233, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("getPosteriorDensityAt", 0, 5, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 235, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.getPosteriorDensityAt", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 233, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_n), __pyx_ptype_5numpy_ndarray, 1, "n", 0))) __PYX_ERR(0, 233, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 235, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_n), __pyx_ptype_5numpy_ndarray, 1, "n", 0))) __PYX_ERR(0, 235, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(__pyx_self, __pyx_v_phi, __pyx_v_theta, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_n, __pyx_v_steps);
 
   /* function exit code */
@@ -5191,38 +5248,38 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
   double __pyx_t_10;
   __Pyx_RefNannySetupContext("getPosteriorDensityAt", 0);
 
-  /* "pycompass/SNE/pdf.pyx":235
+  /* "pycompass/SNE/pdf.pyx":237
  * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved             # <<<<<<<<<<<<<<
  * 
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 235, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 237, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 235, __pyx_L1_error)
+  __pyx_t_2 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 237, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_2);
-  if (unlikely(!__pyx_t_3.memview)) __PYX_ERR(0, 235, __pyx_L1_error)
+  if (unlikely(!__pyx_t_3.memview)) __PYX_ERR(0, 237, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_X = __pyx_t_3;
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":238
+  /* "pycompass/SNE/pdf.pyx":240
  * 
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)             # <<<<<<<<<<<<<<
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 240, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_linalg); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_linalg); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_eig); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_eig); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 240, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -5236,13 +5293,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_1, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 238, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_1, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_2);
     } else
@@ -5250,19 +5307,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_2);
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_INCREF(((PyObject *)__pyx_v_cov));
       __Pyx_GIVEREF(((PyObject *)__pyx_v_cov));
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, ((PyObject *)__pyx_v_cov));
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
@@ -5278,7 +5335,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 238, __pyx_L1_error)
+      __PYX_ERR(0, 240, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -5291,15 +5348,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     __Pyx_INCREF(__pyx_t_1);
     __Pyx_INCREF(__pyx_t_5);
     #else
-    __pyx_t_1 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 238, __pyx_L1_error)
+    __pyx_t_1 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 238, __pyx_L1_error)
+    __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     #endif
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_4 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+    __pyx_t_4 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_6 = Py_TYPE(__pyx_t_4)->tp_iternext;
@@ -5307,7 +5364,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     __Pyx_GOTREF(__pyx_t_1);
     index = 1; __pyx_t_5 = __pyx_t_6(__pyx_t_4); if (unlikely(!__pyx_t_5)) goto __pyx_L3_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_5);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_4), 2) < 0) __PYX_ERR(0, 238, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_4), 2) < 0) __PYX_ERR(0, 240, __pyx_L1_error)
     __pyx_t_6 = NULL;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     goto __pyx_L4_unpacking_done;
@@ -5315,7 +5372,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_6 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 238, __pyx_L1_error)
+    __PYX_ERR(0, 240, __pyx_L1_error)
     __pyx_L4_unpacking_done:;
   }
   __pyx_v_eval = __pyx_t_1;
@@ -5323,16 +5380,16 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
   __pyx_v_evec = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":239
+  /* "pycompass/SNE/pdf.pyx":241
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_t_5 = PyObject_GetItem(__pyx_v_eval, __pyx_slice__6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 239, __pyx_L1_error)
+  __pyx_t_5 = PyObject_GetItem(__pyx_v_eval, __pyx_slice__6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 241, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_sort); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 239, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_sort); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 241, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_5 = NULL;
@@ -5346,67 +5403,67 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
     }
   }
   if (__pyx_t_5) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 241, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   } else {
-    __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 241, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":240
+  /* "pycompass/SNE/pdf.pyx":242
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]             # <<<<<<<<<<<<<<
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]
  */
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 242, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 240, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 242, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_e1 = __pyx_t_7;
 
-  /* "pycompass/SNE/pdf.pyx":241
+  /* "pycompass/SNE/pdf.pyx":243
  *     eval[::-1].sort()
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]             # <<<<<<<<<<<<<<
  *     cdef double e3 = eval[2]
  * 
  */
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 243, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 243, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_e2 = __pyx_t_7;
 
-  /* "pycompass/SNE/pdf.pyx":242
+  /* "pycompass/SNE/pdf.pyx":244
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]             # <<<<<<<<<<<<<<
  * 
  *     cdef lsf = wishLSF(X,nobserved) #calculate the wishart scale factor
  */
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 242, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 244, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 242, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 244, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_e3 = __pyx_t_7;
 
-  /* "pycompass/SNE/pdf.pyx":244
+  /* "pycompass/SNE/pdf.pyx":246
  *     cdef double e3 = eval[2]
  * 
  *     cdef lsf = wishLSF(X,nobserved) #calculate the wishart scale factor             # <<<<<<<<<<<<<<
  * 
  *     #return posterior
  */
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, __pyx_v_nobserved, 0)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 244, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, __pyx_v_nobserved, 0)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 246, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_v_lsf = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":247
+  /* "pycompass/SNE/pdf.pyx":249
  * 
  *     #return posterior
  *     return likExp1D(X,nobserved,phi,theta,e1,e2,e3,steps,lsf) * pp(phi,theta,n[0],n[1],n[2])             # <<<<<<<<<<<<<<
@@ -5414,26 +5471,26 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
  * ##########################################################################
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_v_lsf); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 247, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_v_lsf); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 249, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_n), 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_10 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_10 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyFloat_FromDouble((__pyx_f_9pycompass_3SNE_3pdf_likExp1D(__pyx_v_X, __pyx_v_nobserved, __pyx_v_phi, __pyx_v_theta, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_steps, __pyx_t_7) * __pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_phi, __pyx_v_theta, __pyx_t_8, __pyx_t_9, __pyx_t_10, 0))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble((__pyx_f_9pycompass_3SNE_3pdf_likExp1D(__pyx_v_X, __pyx_v_nobserved, __pyx_v_phi, __pyx_v_theta, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_steps, __pyx_t_7) * __pyx_f_9pycompass_3SNE_3pdf_pp(__pyx_v_phi, __pyx_v_theta, __pyx_t_8, __pyx_t_9, __pyx_t_10, 0))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":233
+  /* "pycompass/SNE/pdf.pyx":235
  * Compute the posterior probability at the specified point.
  * """
  * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
@@ -5460,7 +5517,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_12getPosteriorDensityAt(CYTHON_UN
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":269
+/* "pycompass/SNE/pdf.pyx":271
  *  -a nsamples x 3 numpy array where each element contains each [phi,theta,alpha] in the markov chain
  * """
  * def samplePosteriorMCMC(np.ndarray cov, int nobserved, double[:] normal=None, int nsamples=5000, int maxIter=100000,double proposalWidth=0.075,verbose=True):             # <<<<<<<<<<<<<<
@@ -5516,7 +5573,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_15samplePosteriorMCMC(PyObject *_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nobserved)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("samplePosteriorMCMC", 0, 2, 7, 1); __PYX_ERR(0, 269, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("samplePosteriorMCMC", 0, 2, 7, 1); __PYX_ERR(0, 271, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
@@ -5550,7 +5607,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_15samplePosteriorMCMC(PyObject *_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "samplePosteriorMCMC") < 0)) __PYX_ERR(0, 269, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "samplePosteriorMCMC") < 0)) __PYX_ERR(0, 271, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -5571,25 +5628,25 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_15samplePosteriorMCMC(PyObject *_
       }
     }
     __pyx_v_cov = ((PyArrayObject *)values[0]);
-    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 269, __pyx_L3_error)
+    __pyx_v_nobserved = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_nobserved == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 271, __pyx_L3_error)
     if (values[2]) {
-      __pyx_v_normal = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_normal.memview)) __PYX_ERR(0, 269, __pyx_L3_error)
+      __pyx_v_normal = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_normal.memview)) __PYX_ERR(0, 271, __pyx_L3_error)
     } else {
       __pyx_v_normal = __pyx_k__7;
       __PYX_INC_MEMVIEW(&__pyx_v_normal, 1);
     }
     if (values[3]) {
-      __pyx_v_nsamples = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_nsamples == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 269, __pyx_L3_error)
+      __pyx_v_nsamples = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_nsamples == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 271, __pyx_L3_error)
     } else {
       __pyx_v_nsamples = ((int)0x1388);
     }
     if (values[4]) {
-      __pyx_v_maxIter = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_maxIter == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 269, __pyx_L3_error)
+      __pyx_v_maxIter = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_maxIter == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 271, __pyx_L3_error)
     } else {
       __pyx_v_maxIter = ((int)0x186A0);
     }
     if (values[5]) {
-      __pyx_v_proposalWidth = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_proposalWidth == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 269, __pyx_L3_error)
+      __pyx_v_proposalWidth = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_proposalWidth == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 271, __pyx_L3_error)
     } else {
       __pyx_v_proposalWidth = ((double)0.075);
     }
@@ -5597,13 +5654,13 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_15samplePosteriorMCMC(PyObject *_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("samplePosteriorMCMC", 0, 2, 7, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 269, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("samplePosteriorMCMC", 0, 2, 7, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 271, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.samplePosteriorMCMC", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 269, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_cov), __pyx_ptype_5numpy_ndarray, 1, "cov", 0))) __PYX_ERR(0, 271, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(__pyx_self, __pyx_v_cov, __pyx_v_nobserved, __pyx_v_normal, __pyx_v_nsamples, __pyx_v_maxIter, __pyx_v_proposalWidth, __pyx_v_verbose);
 
   /* function exit code */
@@ -5710,21 +5767,21 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   Py_ssize_t __pyx_t_70;
   __Pyx_RefNannySetupContext("samplePosteriorMCMC", 0);
 
-  /* "pycompass/SNE/pdf.pyx":271
+  /* "pycompass/SNE/pdf.pyx":273
  * def samplePosteriorMCMC(np.ndarray cov, int nobserved, double[:] normal=None, int nsamples=5000, int maxIter=100000,double proposalWidth=0.075,verbose=True):
  *     #declare chain
  *     cdef double[:,:] chain = np.zeros([nsamples,3],dtype=np.double) #phi,theta,alpha             # <<<<<<<<<<<<<<
  * 
  *     #compute eigenvalues and vectors of cov
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_nsamples); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_nsamples); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyList_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_1);
   PyList_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
@@ -5732,45 +5789,45 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __Pyx_GIVEREF(__pyx_int_3);
   PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_3);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
   __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_double); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_double); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 271, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_5);
-  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 271, __pyx_L1_error)
+  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_chain = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":274
+  /* "pycompass/SNE/pdf.pyx":276
  * 
  *     #compute eigenvalues and vectors of cov
  *     eval,evec = np.linalg.eig(cov)             # <<<<<<<<<<<<<<
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  */
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_linalg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_linalg); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_eig); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_eig); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_1 = NULL;
@@ -5784,13 +5841,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     }
   }
   if (!__pyx_t_1) {
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 274, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_cov)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 276, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 274, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 276, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_5);
     } else
@@ -5798,19 +5855,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, ((PyObject *)__pyx_v_cov)};
-      __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 274, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 276, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_5);
     } else
     #endif
     {
-      __pyx_t_2 = PyTuple_New(1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 274, __pyx_L1_error)
+      __pyx_t_2 = PyTuple_New(1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1); __pyx_t_1 = NULL;
       __Pyx_INCREF(((PyObject *)__pyx_v_cov));
       __Pyx_GIVEREF(((PyObject *)__pyx_v_cov));
       PyTuple_SET_ITEM(__pyx_t_2, 0+1, ((PyObject *)__pyx_v_cov));
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 274, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 276, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
@@ -5826,7 +5883,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 274, __pyx_L1_error)
+      __PYX_ERR(0, 276, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -5839,15 +5896,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_INCREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_t_2);
     #else
-    __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 274, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_2 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 274, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     #endif
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_1 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L1_error)
+    __pyx_t_1 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_7 = Py_TYPE(__pyx_t_1)->tp_iternext;
@@ -5855,7 +5912,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_GOTREF(__pyx_t_3);
     index = 1; __pyx_t_2 = __pyx_t_7(__pyx_t_1); if (unlikely(!__pyx_t_2)) goto __pyx_L3_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_2);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < 0) __PYX_ERR(0, 274, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_1), 2) < 0) __PYX_ERR(0, 276, __pyx_L1_error)
     __pyx_t_7 = NULL;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     goto __pyx_L4_unpacking_done;
@@ -5863,7 +5920,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_7 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 274, __pyx_L1_error)
+    __PYX_ERR(0, 276, __pyx_L1_error)
     __pyx_L4_unpacking_done:;
   }
   __pyx_v_eval = __pyx_t_3;
@@ -5871,14 +5928,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __pyx_v_evec = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":275
+  /* "pycompass/SNE/pdf.pyx":277
  *     #compute eigenvalues and vectors of cov
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...             # <<<<<<<<<<<<<<
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_eval, __pyx_n_s_argsort); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_eval, __pyx_n_s_argsort); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -5891,39 +5948,39 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     }
   }
   if (__pyx_t_3) {
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 275, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 277, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   } else {
-    __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 275, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 277, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyObject_GetItem(__pyx_t_5, __pyx_slice__8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_2 = PyObject_GetItem(__pyx_t_5, __pyx_slice__8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_idx = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":276
+  /* "pycompass/SNE/pdf.pyx":278
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]             # <<<<<<<<<<<<<<
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  *     cdef double e1 = eval[0]
  */
-  __pyx_t_2 = PyObject_GetItem(__pyx_v_eval, __pyx_v_idx); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_eval, __pyx_v_idx); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 278, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF_SET(__pyx_v_eval, __pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":277
+  /* "pycompass/SNE/pdf.pyx":279
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_slice__9);
   __Pyx_GIVEREF(__pyx_slice__9);
@@ -5931,80 +5988,80 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __Pyx_INCREF(__pyx_v_idx);
   __Pyx_GIVEREF(__pyx_v_idx);
   PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_v_idx);
-  __pyx_t_5 = PyObject_GetItem(__pyx_v_evec, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __pyx_t_5 = PyObject_GetItem(__pyx_v_evec, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_evec, __pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":278
+  /* "pycompass/SNE/pdf.pyx":280
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  *     cdef double e1 = eval[0]             # <<<<<<<<<<<<<<
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]
  */
-  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 278, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 280, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 278, __pyx_L1_error)
+  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 280, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_e1 = __pyx_t_8;
 
-  /* "pycompass/SNE/pdf.pyx":279
+  /* "pycompass/SNE/pdf.pyx":281
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]             # <<<<<<<<<<<<<<
  *     cdef double e3 = eval[2]
  * 
  */
-  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 279, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 281, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 279, __pyx_L1_error)
+  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 281, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_e2 = __pyx_t_8;
 
-  /* "pycompass/SNE/pdf.pyx":280
+  /* "pycompass/SNE/pdf.pyx":282
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  *     cdef double e3 = eval[2]             # <<<<<<<<<<<<<<
  * 
  *     #compute the scatter matrix
  */
-  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_eval, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_e3 = __pyx_t_8;
 
-  /* "pycompass/SNE/pdf.pyx":283
+  /* "pycompass/SNE/pdf.pyx":285
  * 
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved             # <<<<<<<<<<<<<<
  * 
  *     #set initial phi,theta to trend,plunge of third eigenvector of covariance
  */
-  __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_nobserved); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 285, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_2 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_2 = PyNumber_Multiply(((PyObject *)__pyx_v_cov), __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_2);
-  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 283, __pyx_L1_error)
+  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 285, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_X = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":286
+  /* "pycompass/SNE/pdf.pyx":288
  * 
  *     #set initial phi,theta to trend,plunge of third eigenvector of covariance
  *     chain[0,0],chain[0,1] = vec2TrendPlunge(evec[:,2])             # <<<<<<<<<<<<<<
  * 
  *     #calculate alpha and set to initial value
  */
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2TrendPlunge); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2TrendPlunge); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__11); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_t_3 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__11); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_1 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -6017,14 +6074,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     }
   }
   if (!__pyx_t_1) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_3};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -6033,20 +6090,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_3};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 286, __pyx_L1_error)
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1); __pyx_t_1 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
@@ -6062,7 +6119,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 286, __pyx_L1_error)
+      __PYX_ERR(0, 288, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -6075,15 +6132,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_INCREF(__pyx_t_5);
     __Pyx_INCREF(__pyx_t_4);
     #else
-    __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 288, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     #endif
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext;
@@ -6091,7 +6148,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_GOTREF(__pyx_t_5);
     index = 1; __pyx_t_4 = __pyx_t_7(__pyx_t_3); if (unlikely(!__pyx_t_4)) goto __pyx_L5_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_4);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_3), 2) < 0) __PYX_ERR(0, 286, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_3), 2) < 0) __PYX_ERR(0, 288, __pyx_L1_error)
     __pyx_t_7 = NULL;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     goto __pyx_L6_unpacking_done;
@@ -6099,12 +6156,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_7 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 286, __pyx_L1_error)
+    __PYX_ERR(0, 288, __pyx_L1_error)
     __pyx_L6_unpacking_done:;
   }
-  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_10 = 0;
   __pyx_t_11 = 0;
@@ -6113,30 +6170,30 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __pyx_t_13 = 1;
   *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_12 * __pyx_v_chain.strides[0]) ) + __pyx_t_13 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
 
-  /* "pycompass/SNE/pdf.pyx":289
+  /* "pycompass/SNE/pdf.pyx":291
  * 
  *     #calculate alpha and set to initial value
  *     chain[0,2] = asin(evec[2,1]/cos(chain[0,1])) #alpha = arcsin(e2.z / cos(theta)) #change 2 back to 1?             # <<<<<<<<<<<<<<
  * 
  *     #compute log probability (density) of initial state
  */
-  __pyx_t_2 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__12); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__12); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_14 = 0;
   __pyx_t_15 = 1;
-  __pyx_t_4 = PyFloat_FromDouble(cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_14 * __pyx_v_chain.strides[0]) ) + __pyx_t_15 * __pyx_v_chain.strides[1]) ))))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_14 * __pyx_v_chain.strides[0]) ) + __pyx_t_15 * __pyx_v_chain.strides[1]) ))))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_16 = 0;
   __pyx_t_17 = 2;
   *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_16 * __pyx_v_chain.strides[0]) ) + __pyx_t_17 * __pyx_v_chain.strides[1]) )) = asin(__pyx_t_9);
 
-  /* "pycompass/SNE/pdf.pyx":292
+  /* "pycompass/SNE/pdf.pyx":294
  * 
  *     #compute log probability (density) of initial state
  *     cdef double sf = wishLSF(X,nobserved-1)             # <<<<<<<<<<<<<<
@@ -6145,7 +6202,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_sf = __pyx_f_9pycompass_3SNE_3pdf_wishLSF(__pyx_v_X, (__pyx_v_nobserved - 1), 0);
 
-  /* "pycompass/SNE/pdf.pyx":293
+  /* "pycompass/SNE/pdf.pyx":295
  *     #compute log probability (density) of initial state
  *     cdef double sf = wishLSF(X,nobserved-1)
  *     cdef double log_p_current = 0             # <<<<<<<<<<<<<<
@@ -6154,7 +6211,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_log_p_current = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":294
+  /* "pycompass/SNE/pdf.pyx":296
  *     cdef double sf = wishLSF(X,nobserved-1)
  *     cdef double log_p_current = 0
  *     if normal is None:             # <<<<<<<<<<<<<<
@@ -6164,7 +6221,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __pyx_t_18 = ((((PyObject *) __pyx_v_normal.memview) == Py_None) != 0);
   if (__pyx_t_18) {
 
-    /* "pycompass/SNE/pdf.pyx":295
+    /* "pycompass/SNE/pdf.pyx":297
  *     cdef double log_p_current = 0
  *     if normal is None:
  *         log_p_current = logWish(X,nobserved-1,chain[0,0],chain[0,1],chain[0,2],e1,e2,e3,sf) #uniform prior             # <<<<<<<<<<<<<<
@@ -6179,7 +6236,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __pyx_t_24 = 2;
     __pyx_v_log_p_current = __pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, (__pyx_v_nobserved - 1), (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_19 * __pyx_v_chain.strides[0]) ) + __pyx_t_20 * __pyx_v_chain.strides[1]) ))), (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_21 * __pyx_v_chain.strides[0]) ) + __pyx_t_22 * __pyx_v_chain.strides[1]) ))), (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_23 * __pyx_v_chain.strides[0]) ) + __pyx_t_24 * __pyx_v_chain.strides[1]) ))), __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_sf, 0);
 
-    /* "pycompass/SNE/pdf.pyx":294
+    /* "pycompass/SNE/pdf.pyx":296
  *     cdef double sf = wishLSF(X,nobserved-1)
  *     cdef double log_p_current = 0
  *     if normal is None:             # <<<<<<<<<<<<<<
@@ -6189,7 +6246,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     goto __pyx_L7;
   }
 
-  /* "pycompass/SNE/pdf.pyx":297
+  /* "pycompass/SNE/pdf.pyx":299
  *         log_p_current = logWish(X,nobserved-1,chain[0,0],chain[0,1],chain[0,2],e1,e2,e3,sf) #uniform prior
  *     else:
  *         log_p_current = logWish(X,nobserved-1,chain[0,0],chain[0,1],chain[0,2],e1,e2,e3,sf) + log( pp(chain[0,0],chain[0,1],normal[0],normal[1],normal[2]) )             # <<<<<<<<<<<<<<
@@ -6214,7 +6271,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   }
   __pyx_L7:;
 
-  /* "pycompass/SNE/pdf.pyx":300
+  /* "pycompass/SNE/pdf.pyx":302
  * 
  *     #define variables for proposed states
  *     cdef double log_p_proposed = 0             # <<<<<<<<<<<<<<
@@ -6223,7 +6280,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_log_p_proposed = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":301
+  /* "pycompass/SNE/pdf.pyx":303
  *     #define variables for proposed states
  *     cdef double log_p_proposed = 0
  *     cdef double phi = 0             # <<<<<<<<<<<<<<
@@ -6232,7 +6289,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_phi = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":302
+  /* "pycompass/SNE/pdf.pyx":304
  *     cdef double log_p_proposed = 0
  *     cdef double phi = 0
  *     cdef double theta = 0             # <<<<<<<<<<<<<<
@@ -6241,7 +6298,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_theta = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":303
+  /* "pycompass/SNE/pdf.pyx":305
  *     cdef double phi = 0
  *     cdef double theta = 0
  *     cdef double alpha = 0             # <<<<<<<<<<<<<<
@@ -6250,24 +6307,24 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_alpha = 0.0;
 
-  /* "pycompass/SNE/pdf.pyx":306
+  /* "pycompass/SNE/pdf.pyx":308
  * 
  *     #create array of random numbers (to avoid calling np.random.normal(...) and np.rand(...) within the loop
  *     cdef double[:,:] nRand = np.random.normal(0,proposalWidth,size=(maxIter,3)) #3 arrays of maxIter (typically 1-million) samples from normal distribution.             # <<<<<<<<<<<<<<
  *     cdef double[:] logURand = np.log(np.random.rand(maxIter)) #array of maxIter (typically 1-million) numbers from standard uniform distribution.
  * 
  */
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_normal); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_normal); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_proposalWidth); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_proposalWidth); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -6275,11 +6332,11 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __Pyx_GIVEREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_4);
   __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_maxIter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_maxIter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
@@ -6287,41 +6344,41 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   __Pyx_GIVEREF(__pyx_int_3);
   PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_int_3);
   __pyx_t_3 = 0;
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_size, __pyx_t_1) < 0) __PYX_ERR(0, 306, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_size, __pyx_t_1) < 0) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 306, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_1);
-  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 306, __pyx_L1_error)
+  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 308, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_nRand = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":307
+  /* "pycompass/SNE/pdf.pyx":309
  *     #create array of random numbers (to avoid calling np.random.normal(...) and np.rand(...) within the loop
  *     cdef double[:,:] nRand = np.random.normal(0,proposalWidth,size=(maxIter,3)) #3 arrays of maxIter (typically 1-million) samples from normal distribution.
  *     cdef double[:] logURand = np.log(np.random.rand(maxIter)) #array of maxIter (typically 1-million) numbers from standard uniform distribution.             # <<<<<<<<<<<<<<
  * 
  *     #define loop variables
  */
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_log); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_log); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_random); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_random); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_rand); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_rand); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_maxIter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 307, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_maxIter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_38 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -6334,14 +6391,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     }
   }
   if (!__pyx_t_38) {
-    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_4);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_38, __pyx_t_3};
-      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_38); __pyx_t_38 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -6350,20 +6407,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_38, __pyx_t_3};
-      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_38); __pyx_t_38 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_39 = PyTuple_New(1+1); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_39 = PyTuple_New(1+1); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_39);
       __Pyx_GIVEREF(__pyx_t_38); PyTuple_SET_ITEM(__pyx_t_39, 0, __pyx_t_38); __pyx_t_38 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_39, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_39, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_39, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_39); __pyx_t_39 = 0;
     }
@@ -6380,14 +6437,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     }
   }
   if (!__pyx_t_5) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 307, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 309, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_4};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -6396,33 +6453,33 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_4};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else
     #endif
     {
-      __pyx_t_39 = PyTuple_New(1+1); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_39 = PyTuple_New(1+1); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_39);
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_39, 0, __pyx_t_5); __pyx_t_5 = NULL;
       __Pyx_GIVEREF(__pyx_t_4);
       PyTuple_SET_ITEM(__pyx_t_39, 0+1, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_39, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_39, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_39); __pyx_t_39 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_40 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
-  if (unlikely(!__pyx_t_40.memview)) __PYX_ERR(0, 307, __pyx_L1_error)
+  if (unlikely(!__pyx_t_40.memview)) __PYX_ERR(0, 309, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_logURand = __pyx_t_40;
   __pyx_t_40.memview = NULL;
   __pyx_t_40.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":310
+  /* "pycompass/SNE/pdf.pyx":312
  * 
  *     #define loop variables
  *     cdef int c = 0             # <<<<<<<<<<<<<<
@@ -6431,7 +6488,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_c = 0;
 
-  /* "pycompass/SNE/pdf.pyx":311
+  /* "pycompass/SNE/pdf.pyx":313
  *     #define loop variables
  *     cdef int c = 0
  *     cdef int iter = 0             # <<<<<<<<<<<<<<
@@ -6440,7 +6497,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_iter = 0;
 
-  /* "pycompass/SNE/pdf.pyx":312
+  /* "pycompass/SNE/pdf.pyx":314
  *     cdef int c = 0
  *     cdef int iter = 0
  *     cdef int i = 0             # <<<<<<<<<<<<<<
@@ -6449,7 +6506,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_i = 0;
 
-  /* "pycompass/SNE/pdf.pyx":313
+  /* "pycompass/SNE/pdf.pyx":315
  *     cdef int iter = 0
  *     cdef int i = 0
  *     cdef int randIdx = 0 #index of the current random number             # <<<<<<<<<<<<<<
@@ -6458,7 +6515,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   __pyx_v_randIdx = 0;
 
-  /* "pycompass/SNE/pdf.pyx":314
+  /* "pycompass/SNE/pdf.pyx":316
  *     cdef int i = 0
  *     cdef int randIdx = 0 #index of the current random number
  *     for i in range(nsamples-1):             # <<<<<<<<<<<<<<
@@ -6469,7 +6526,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   for (__pyx_t_42 = 0; __pyx_t_42 < __pyx_t_41; __pyx_t_42+=1) {
     __pyx_v_i = __pyx_t_42;
 
-    /* "pycompass/SNE/pdf.pyx":316
+    /* "pycompass/SNE/pdf.pyx":318
  *     for i in range(nsamples-1):
  *         #find next state
  *         c = 0             # <<<<<<<<<<<<<<
@@ -6478,7 +6535,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
     __pyx_v_c = 0;
 
-    /* "pycompass/SNE/pdf.pyx":317
+    /* "pycompass/SNE/pdf.pyx":319
  *         #find next state
  *         c = 0
  *         while c < maxIter:             # <<<<<<<<<<<<<<
@@ -6489,7 +6546,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((__pyx_v_c < __pyx_v_maxIter) != 0);
       if (!__pyx_t_18) break;
 
-      /* "pycompass/SNE/pdf.pyx":318
+      /* "pycompass/SNE/pdf.pyx":320
  *         c = 0
  *         while c < maxIter:
  *             iter += 1 #track iterations             # <<<<<<<<<<<<<<
@@ -6498,7 +6555,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       __pyx_v_iter = (__pyx_v_iter + 1);
 
-      /* "pycompass/SNE/pdf.pyx":319
+      /* "pycompass/SNE/pdf.pyx":321
  *         while c < maxIter:
  *             iter += 1 #track iterations
  *             randIdx += 1             # <<<<<<<<<<<<<<
@@ -6507,7 +6564,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       __pyx_v_randIdx = (__pyx_v_randIdx + 1);
 
-      /* "pycompass/SNE/pdf.pyx":320
+      /* "pycompass/SNE/pdf.pyx":322
  *             iter += 1 #track iterations
  *             randIdx += 1
  *             if randIdx >= maxIter: #wrap random index if need be (is ok if the random numbers repeat as the sampler will be in a different spot)             # <<<<<<<<<<<<<<
@@ -6517,7 +6574,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((__pyx_v_randIdx >= __pyx_v_maxIter) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":321
+        /* "pycompass/SNE/pdf.pyx":323
  *             randIdx += 1
  *             if randIdx >= maxIter: #wrap random index if need be (is ok if the random numbers repeat as the sampler will be in a different spot)
  *                 randIdx -= maxIter             # <<<<<<<<<<<<<<
@@ -6526,7 +6583,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_randIdx = (__pyx_v_randIdx - __pyx_v_maxIter);
 
-        /* "pycompass/SNE/pdf.pyx":320
+        /* "pycompass/SNE/pdf.pyx":322
  *             iter += 1 #track iterations
  *             randIdx += 1
  *             if randIdx >= maxIter: #wrap random index if need be (is ok if the random numbers repeat as the sampler will be in a different spot)             # <<<<<<<<<<<<<<
@@ -6535,7 +6592,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       }
 
-      /* "pycompass/SNE/pdf.pyx":324
+      /* "pycompass/SNE/pdf.pyx":326
  * 
  *             #sample proposed state
  *             phi = chain[i,0] + nRand[randIdx,0] #np.random.normal(0,proposalWidth)             # <<<<<<<<<<<<<<
@@ -6548,7 +6605,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_46 = 0;
       __pyx_v_phi = ((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_43 * __pyx_v_chain.strides[0]) ) + __pyx_t_44 * __pyx_v_chain.strides[1]) ))) + (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_nRand.data + __pyx_t_45 * __pyx_v_nRand.strides[0]) ) + __pyx_t_46 * __pyx_v_nRand.strides[1]) ))));
 
-      /* "pycompass/SNE/pdf.pyx":325
+      /* "pycompass/SNE/pdf.pyx":327
  *             #sample proposed state
  *             phi = chain[i,0] + nRand[randIdx,0] #np.random.normal(0,proposalWidth)
  *             theta = chain[i,1] + nRand[randIdx,1] #np.random.normal(0,proposalWidth)             # <<<<<<<<<<<<<<
@@ -6561,7 +6618,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_50 = 1;
       __pyx_v_theta = ((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_47 * __pyx_v_chain.strides[0]) ) + __pyx_t_48 * __pyx_v_chain.strides[1]) ))) + (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_nRand.data + __pyx_t_49 * __pyx_v_nRand.strides[0]) ) + __pyx_t_50 * __pyx_v_nRand.strides[1]) ))));
 
-      /* "pycompass/SNE/pdf.pyx":326
+      /* "pycompass/SNE/pdf.pyx":328
  *             phi = chain[i,0] + nRand[randIdx,0] #np.random.normal(0,proposalWidth)
  *             theta = chain[i,1] + nRand[randIdx,1] #np.random.normal(0,proposalWidth)
  *             alpha = chain[i,2] + nRand[randIdx,2] #np.random.normal(0,proposalWidth)             # <<<<<<<<<<<<<<
@@ -6574,7 +6631,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_54 = 2;
       __pyx_v_alpha = ((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_51 * __pyx_v_chain.strides[0]) ) + __pyx_t_52 * __pyx_v_chain.strides[1]) ))) + (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_nRand.data + __pyx_t_53 * __pyx_v_nRand.strides[0]) ) + __pyx_t_54 * __pyx_v_nRand.strides[1]) ))));
 
-      /* "pycompass/SNE/pdf.pyx":329
+      /* "pycompass/SNE/pdf.pyx":331
  * 
  *             #ensure phi/theta/alpha map to correct domains
  *             if theta < 0: #plunge should be positive, if negative, flip             # <<<<<<<<<<<<<<
@@ -6584,7 +6641,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((__pyx_v_theta < 0.0) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":330
+        /* "pycompass/SNE/pdf.pyx":332
  *             #ensure phi/theta/alpha map to correct domains
  *             if theta < 0: #plunge should be positive, if negative, flip
  *                 theta -= theta             # <<<<<<<<<<<<<<
@@ -6593,7 +6650,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_theta = (__pyx_v_theta - __pyx_v_theta);
 
-        /* "pycompass/SNE/pdf.pyx":331
+        /* "pycompass/SNE/pdf.pyx":333
  *             if theta < 0: #plunge should be positive, if negative, flip
  *                 theta -= theta
  *                 phi -= pi             # <<<<<<<<<<<<<<
@@ -6602,7 +6659,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_phi = (__pyx_v_phi - __pyx_v_9pycompass_3SNE_3pdf_pi);
 
-        /* "pycompass/SNE/pdf.pyx":329
+        /* "pycompass/SNE/pdf.pyx":331
  * 
  *             #ensure phi/theta/alpha map to correct domains
  *             if theta < 0: #plunge should be positive, if negative, flip             # <<<<<<<<<<<<<<
@@ -6611,7 +6668,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       }
 
-      /* "pycompass/SNE/pdf.pyx":332
+      /* "pycompass/SNE/pdf.pyx":334
  *                 theta -= theta
  *                 phi -= pi
  *             if theta > pi / 2: #plunge > 90, flip             # <<<<<<<<<<<<<<
@@ -6621,7 +6678,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((__pyx_v_theta > (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0)) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":333
+        /* "pycompass/SNE/pdf.pyx":335
  *                 phi -= pi
  *             if theta > pi / 2: #plunge > 90, flip
  *                 theta = pi - theta             # <<<<<<<<<<<<<<
@@ -6630,7 +6687,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_theta = (__pyx_v_9pycompass_3SNE_3pdf_pi - __pyx_v_theta);
 
-        /* "pycompass/SNE/pdf.pyx":334
+        /* "pycompass/SNE/pdf.pyx":336
  *             if theta > pi / 2: #plunge > 90, flip
  *                 theta = pi - theta
  *                 phi -= pi             # <<<<<<<<<<<<<<
@@ -6639,7 +6696,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_phi = (__pyx_v_phi - __pyx_v_9pycompass_3SNE_3pdf_pi);
 
-        /* "pycompass/SNE/pdf.pyx":332
+        /* "pycompass/SNE/pdf.pyx":334
  *                 theta -= theta
  *                 phi -= pi
  *             if theta > pi / 2: #plunge > 90, flip             # <<<<<<<<<<<<<<
@@ -6648,7 +6705,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       }
 
-      /* "pycompass/SNE/pdf.pyx":335
+      /* "pycompass/SNE/pdf.pyx":337
  *                 theta = pi - theta
  *                 phi -= pi
  *             while phi < 0:             # <<<<<<<<<<<<<<
@@ -6659,7 +6716,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_18 = ((__pyx_v_phi < 0.0) != 0);
         if (!__pyx_t_18) break;
 
-        /* "pycompass/SNE/pdf.pyx":336
+        /* "pycompass/SNE/pdf.pyx":338
  *                 phi -= pi
  *             while phi < 0:
  *                 phi += 2*pi             # <<<<<<<<<<<<<<
@@ -6669,7 +6726,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_v_phi = (__pyx_v_phi + (2.0 * __pyx_v_9pycompass_3SNE_3pdf_pi));
       }
 
-      /* "pycompass/SNE/pdf.pyx":337
+      /* "pycompass/SNE/pdf.pyx":339
  *             while phi < 0:
  *                 phi += 2*pi
  *             while phi >= 2*pi:             # <<<<<<<<<<<<<<
@@ -6680,7 +6737,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_18 = ((__pyx_v_phi >= (2.0 * __pyx_v_9pycompass_3SNE_3pdf_pi)) != 0);
         if (!__pyx_t_18) break;
 
-        /* "pycompass/SNE/pdf.pyx":338
+        /* "pycompass/SNE/pdf.pyx":340
  *                 phi += 2*pi
  *             while phi >= 2*pi:
  *                 phi -= 2*pi             # <<<<<<<<<<<<<<
@@ -6690,7 +6747,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_v_phi = (__pyx_v_phi - (2.0 * __pyx_v_9pycompass_3SNE_3pdf_pi));
       }
 
-      /* "pycompass/SNE/pdf.pyx":339
+      /* "pycompass/SNE/pdf.pyx":341
  *             while phi >= 2*pi:
  *                 phi -= 2*pi
  *             while alpha < 0: #alpha should be in range 0-180             # <<<<<<<<<<<<<<
@@ -6701,7 +6758,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_18 = ((__pyx_v_alpha < 0.0) != 0);
         if (!__pyx_t_18) break;
 
-        /* "pycompass/SNE/pdf.pyx":340
+        /* "pycompass/SNE/pdf.pyx":342
  *                 phi -= 2*pi
  *             while alpha < 0: #alpha should be in range 0-180
  *                 alpha += pi             # <<<<<<<<<<<<<<
@@ -6711,7 +6768,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_v_alpha = (__pyx_v_alpha + __pyx_v_9pycompass_3SNE_3pdf_pi);
       }
 
-      /* "pycompass/SNE/pdf.pyx":341
+      /* "pycompass/SNE/pdf.pyx":343
  *             while alpha < 0: #alpha should be in range 0-180
  *                 alpha += pi
  *             while alpha > pi: #alpha should be in range 0-180             # <<<<<<<<<<<<<<
@@ -6722,7 +6779,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_18 = ((__pyx_v_alpha > __pyx_v_9pycompass_3SNE_3pdf_pi) != 0);
         if (!__pyx_t_18) break;
 
-        /* "pycompass/SNE/pdf.pyx":342
+        /* "pycompass/SNE/pdf.pyx":344
  *                 alpha += pi
  *             while alpha > pi: #alpha should be in range 0-180
  *                 alpha -= pi             # <<<<<<<<<<<<<<
@@ -6732,7 +6789,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_v_alpha = (__pyx_v_alpha - __pyx_v_9pycompass_3SNE_3pdf_pi);
       }
 
-      /* "pycompass/SNE/pdf.pyx":345
+      /* "pycompass/SNE/pdf.pyx":347
  * 
  *             #evaluate log probability of proposed state
  *             if normal is None:             # <<<<<<<<<<<<<<
@@ -6742,7 +6799,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((((PyObject *) __pyx_v_normal.memview) == Py_None) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":346
+        /* "pycompass/SNE/pdf.pyx":348
  *             #evaluate log probability of proposed state
  *             if normal is None:
  *                 log_p_proposed = logWish(X,nobserved-1,phi,theta,alpha,e1,e2,e3,sf) #uniform prior             # <<<<<<<<<<<<<<
@@ -6751,7 +6808,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_log_p_proposed = __pyx_f_9pycompass_3SNE_3pdf_logWish(__pyx_v_X, (__pyx_v_nobserved - 1), __pyx_v_phi, __pyx_v_theta, __pyx_v_alpha, __pyx_v_e1, __pyx_v_e2, __pyx_v_e3, __pyx_v_sf, 0);
 
-        /* "pycompass/SNE/pdf.pyx":345
+        /* "pycompass/SNE/pdf.pyx":347
  * 
  *             #evaluate log probability of proposed state
  *             if normal is None:             # <<<<<<<<<<<<<<
@@ -6761,7 +6818,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         goto __pyx_L23;
       }
 
-      /* "pycompass/SNE/pdf.pyx":348
+      /* "pycompass/SNE/pdf.pyx":350
  *                 log_p_proposed = logWish(X,nobserved-1,phi,theta,alpha,e1,e2,e3,sf) #uniform prior
  *             else:
  *                 log_p_proposed = logWish(X,nobserved-1,phi,theta,alpha,e1,e2,e3,sf)+ log( pp(phi,theta,normal[0],normal[1],normal[2]) )             # <<<<<<<<<<<<<<
@@ -6776,7 +6833,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       }
       __pyx_L23:;
 
-      /* "pycompass/SNE/pdf.pyx":351
+      /* "pycompass/SNE/pdf.pyx":353
  * 
  *             #accept or reject?
  *             if logURand[randIdx] <= log_p_proposed - log_p_current:             # <<<<<<<<<<<<<<
@@ -6787,7 +6844,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = (((*((double *) ( /* dim=0 */ (__pyx_v_logURand.data + __pyx_t_58 * __pyx_v_logURand.strides[0]) ))) <= (__pyx_v_log_p_proposed - __pyx_v_log_p_current)) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":353
+        /* "pycompass/SNE/pdf.pyx":355
  *             if logURand[randIdx] <= log_p_proposed - log_p_current:
  * 
  *                 log_p_current = log_p_proposed             # <<<<<<<<<<<<<<
@@ -6796,7 +6853,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         __pyx_v_log_p_current = __pyx_v_log_p_proposed;
 
-        /* "pycompass/SNE/pdf.pyx":356
+        /* "pycompass/SNE/pdf.pyx":358
  * 
  *                 #accept and store
  *                 chain[i+1,0] = phi             # <<<<<<<<<<<<<<
@@ -6807,7 +6864,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_60 = 0;
         *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_59 * __pyx_v_chain.strides[0]) ) + __pyx_t_60 * __pyx_v_chain.strides[1]) )) = __pyx_v_phi;
 
-        /* "pycompass/SNE/pdf.pyx":357
+        /* "pycompass/SNE/pdf.pyx":359
  *                 #accept and store
  *                 chain[i+1,0] = phi
  *                 chain[i+1,1] = theta             # <<<<<<<<<<<<<<
@@ -6818,7 +6875,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_62 = 1;
         *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_61 * __pyx_v_chain.strides[0]) ) + __pyx_t_62 * __pyx_v_chain.strides[1]) )) = __pyx_v_theta;
 
-        /* "pycompass/SNE/pdf.pyx":358
+        /* "pycompass/SNE/pdf.pyx":360
  *                 chain[i+1,0] = phi
  *                 chain[i+1,1] = theta
  *                 chain[i+1,2] = alpha             # <<<<<<<<<<<<<<
@@ -6829,7 +6886,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __pyx_t_64 = 2;
         *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_63 * __pyx_v_chain.strides[0]) ) + __pyx_t_64 * __pyx_v_chain.strides[1]) )) = __pyx_v_alpha;
 
-        /* "pycompass/SNE/pdf.pyx":360
+        /* "pycompass/SNE/pdf.pyx":362
  *                 chain[i+1,2] = alpha
  * 
  *                 break #move on to next one             # <<<<<<<<<<<<<<
@@ -6838,7 +6895,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
         goto __pyx_L11_break;
 
-        /* "pycompass/SNE/pdf.pyx":351
+        /* "pycompass/SNE/pdf.pyx":353
  * 
  *             #accept or reject?
  *             if logURand[randIdx] <= log_p_proposed - log_p_current:             # <<<<<<<<<<<<<<
@@ -6847,7 +6904,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       }
 
-      /* "pycompass/SNE/pdf.pyx":362
+      /* "pycompass/SNE/pdf.pyx":364
  *                 break #move on to next one
  *             #keep on searching
  *             c += 1             # <<<<<<<<<<<<<<
@@ -6856,7 +6913,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
       __pyx_v_c = (__pyx_v_c + 1);
 
-      /* "pycompass/SNE/pdf.pyx":364
+      /* "pycompass/SNE/pdf.pyx":366
  *             c += 1
  * 
  *             if c > maxIter:             # <<<<<<<<<<<<<<
@@ -6866,57 +6923,21 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
       __pyx_t_18 = ((__pyx_v_c > __pyx_v_maxIter) != 0);
       if (__pyx_t_18) {
 
-        /* "pycompass/SNE/pdf.pyx":365
+        /* "pycompass/SNE/pdf.pyx":367
  * 
  *             if c > maxIter:
  *                 print ("Warning - MCMC sampler could not find valid state. Terminating chain. (values replaced with nans).")             # <<<<<<<<<<<<<<
  *                 chain[i+1,0] = np.nan
  *                 chain[i+1,1] = np.nan
  */
-        if (__Pyx_PrintOne(0, __pyx_kp_s_Warning_MCMC_sampler_could_not_f) < 0) __PYX_ERR(0, 365, __pyx_L1_error)
+        if (__Pyx_PrintOne(0, __pyx_kp_s_Warning_MCMC_sampler_could_not_f) < 0) __PYX_ERR(0, 367, __pyx_L1_error)
 
-        /* "pycompass/SNE/pdf.pyx":366
+        /* "pycompass/SNE/pdf.pyx":368
  *             if c > maxIter:
  *                 print ("Warning - MCMC sampler could not find valid state. Terminating chain. (values replaced with nans).")
  *                 chain[i+1,0] = np.nan             # <<<<<<<<<<<<<<
  *                 chain[i+1,1] = np.nan
  *                 chain[i+1,2] = np.nan
- */
-        __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 366, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_nan); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 366, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_65 = (__pyx_v_i + 1);
-        __pyx_t_66 = 0;
-        *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_65 * __pyx_v_chain.strides[0]) ) + __pyx_t_66 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
-
-        /* "pycompass/SNE/pdf.pyx":367
- *                 print ("Warning - MCMC sampler could not find valid state. Terminating chain. (values replaced with nans).")
- *                 chain[i+1,0] = np.nan
- *                 chain[i+1,1] = np.nan             # <<<<<<<<<<<<<<
- *                 chain[i+1,2] = np.nan
- *                 return chain
- */
-        __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 367, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nan); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 367, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_1);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 367, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_67 = (__pyx_v_i + 1);
-        __pyx_t_68 = 1;
-        *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_67 * __pyx_v_chain.strides[0]) ) + __pyx_t_68 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
-
-        /* "pycompass/SNE/pdf.pyx":368
- *                 chain[i+1,0] = np.nan
- *                 chain[i+1,1] = np.nan
- *                 chain[i+1,2] = np.nan             # <<<<<<<<<<<<<<
- *                 return chain
- *     if verbose:
  */
         __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 368, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
@@ -6925,11 +6946,47 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 368, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __pyx_t_65 = (__pyx_v_i + 1);
+        __pyx_t_66 = 0;
+        *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_65 * __pyx_v_chain.strides[0]) ) + __pyx_t_66 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
+
+        /* "pycompass/SNE/pdf.pyx":369
+ *                 print ("Warning - MCMC sampler could not find valid state. Terminating chain. (values replaced with nans).")
+ *                 chain[i+1,0] = np.nan
+ *                 chain[i+1,1] = np.nan             # <<<<<<<<<<<<<<
+ *                 chain[i+1,2] = np.nan
+ *                 return chain
+ */
+        __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 369, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nan); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 369, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 369, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __pyx_t_67 = (__pyx_v_i + 1);
+        __pyx_t_68 = 1;
+        *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_67 * __pyx_v_chain.strides[0]) ) + __pyx_t_68 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
+
+        /* "pycompass/SNE/pdf.pyx":370
+ *                 chain[i+1,0] = np.nan
+ *                 chain[i+1,1] = np.nan
+ *                 chain[i+1,2] = np.nan             # <<<<<<<<<<<<<<
+ *                 return chain
+ *     if verbose:
+ */
+        __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_nan); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 370, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_69 = (__pyx_v_i + 1);
         __pyx_t_70 = 2;
         *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_chain.data + __pyx_t_69 * __pyx_v_chain.strides[0]) ) + __pyx_t_70 * __pyx_v_chain.strides[1]) )) = __pyx_t_9;
 
-        /* "pycompass/SNE/pdf.pyx":369
+        /* "pycompass/SNE/pdf.pyx":371
  *                 chain[i+1,1] = np.nan
  *                 chain[i+1,2] = np.nan
  *                 return chain             # <<<<<<<<<<<<<<
@@ -6937,13 +6994,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  *         print ("Sampled %d points in %d iterations. On average %.1f iterations were needed per sample." % (nsamples,iter,iter/nsamples))
  */
         __Pyx_XDECREF(__pyx_r);
-        __pyx_t_2 = __pyx_memoryview_fromslice(__pyx_v_chain, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 369, __pyx_L1_error)
+        __pyx_t_2 = __pyx_memoryview_fromslice(__pyx_v_chain, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 371, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __pyx_r = __pyx_t_2;
         __pyx_t_2 = 0;
         goto __pyx_L0;
 
-        /* "pycompass/SNE/pdf.pyx":364
+        /* "pycompass/SNE/pdf.pyx":366
  *             c += 1
  * 
  *             if c > maxIter:             # <<<<<<<<<<<<<<
@@ -6955,30 +7012,30 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __pyx_L11_break:;
   }
 
-  /* "pycompass/SNE/pdf.pyx":370
+  /* "pycompass/SNE/pdf.pyx":372
  *                 chain[i+1,2] = np.nan
  *                 return chain
  *     if verbose:             # <<<<<<<<<<<<<<
  *         print ("Sampled %d points in %d iterations. On average %.1f iterations were needed per sample." % (nsamples,iter,iter/nsamples))
  * 
  */
-  __pyx_t_18 = __Pyx_PyObject_IsTrue(__pyx_v_verbose); if (unlikely(__pyx_t_18 < 0)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_PyObject_IsTrue(__pyx_v_verbose); if (unlikely(__pyx_t_18 < 0)) __PYX_ERR(0, 372, __pyx_L1_error)
   if (__pyx_t_18) {
 
-    /* "pycompass/SNE/pdf.pyx":371
+    /* "pycompass/SNE/pdf.pyx":373
  *                 return chain
  *     if verbose:
  *         print ("Sampled %d points in %d iterations. On average %.1f iterations were needed per sample." % (nsamples,iter,iter/nsamples))             # <<<<<<<<<<<<<<
  * 
  *     return chain
  */
-    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nsamples); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_nsamples); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_iter); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_iter); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_39 = __Pyx_PyInt_From_int((__pyx_v_iter / __pyx_v_nsamples)); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_39 = __Pyx_PyInt_From_int((__pyx_v_iter / __pyx_v_nsamples)); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_39);
-    __pyx_t_4 = PyTuple_New(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_4 = PyTuple_New(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_2);
     PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
@@ -6989,13 +7046,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
     __pyx_t_2 = 0;
     __pyx_t_1 = 0;
     __pyx_t_39 = 0;
-    __pyx_t_39 = __Pyx_PyString_Format(__pyx_kp_s_Sampled_d_points_in_d_iterations, __pyx_t_4); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_39 = __Pyx_PyString_Format(__pyx_kp_s_Sampled_d_points_in_d_iterations, __pyx_t_4); if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_39);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (__Pyx_PrintOne(0, __pyx_t_39) < 0) __PYX_ERR(0, 371, __pyx_L1_error)
+    if (__Pyx_PrintOne(0, __pyx_t_39) < 0) __PYX_ERR(0, 373, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_39); __pyx_t_39 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":370
+    /* "pycompass/SNE/pdf.pyx":372
  *                 chain[i+1,2] = np.nan
  *                 return chain
  *     if verbose:             # <<<<<<<<<<<<<<
@@ -7004,7 +7061,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":373
+  /* "pycompass/SNE/pdf.pyx":375
  *         print ("Sampled %d points in %d iterations. On average %.1f iterations were needed per sample." % (nsamples,iter,iter/nsamples))
  * 
  *     return chain             # <<<<<<<<<<<<<<
@@ -7012,13 +7069,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_39 = __pyx_memoryview_fromslice(__pyx_v_chain, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 373, __pyx_L1_error)
+  __pyx_t_39 = __pyx_memoryview_fromslice(__pyx_v_chain, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_39)) __PYX_ERR(0, 375, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_39);
   __pyx_r = __pyx_t_39;
   __pyx_t_39 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":269
+  /* "pycompass/SNE/pdf.pyx":271
  *  -a nsamples x 3 numpy array where each element contains each [phi,theta,alpha] in the markov chain
  * """
  * def samplePosteriorMCMC(np.ndarray cov, int nobserved, double[:] normal=None, int nsamples=5000, int maxIter=100000,double proposalWidth=0.075,verbose=True):             # <<<<<<<<<<<<<<
@@ -7053,7 +7110,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_14samplePosteriorMCMC(CYTHON_UNUS
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":385
+/* "pycompass/SNE/pdf.pyx":387
  * -a density grid for plotting with mplstereneot.contourf or similar. Density values will sum to 1 over the domain.
  * """
  * def gridSamples(np.ndarray grid, double[:,:] trace):             # <<<<<<<<<<<<<<
@@ -7093,11 +7150,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_17gridSamples(PyObject *__pyx_sel
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_trace)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("gridSamples", 1, 2, 2, 1); __PYX_ERR(0, 385, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("gridSamples", 1, 2, 2, 1); __PYX_ERR(0, 387, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "gridSamples") < 0)) __PYX_ERR(0, 385, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "gridSamples") < 0)) __PYX_ERR(0, 387, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -7106,17 +7163,17 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_17gridSamples(PyObject *__pyx_sel
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
     __pyx_v_grid = ((PyArrayObject *)values[0]);
-    __pyx_v_trace = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[1]); if (unlikely(!__pyx_v_trace.memview)) __PYX_ERR(0, 385, __pyx_L3_error)
+    __pyx_v_trace = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[1]); if (unlikely(!__pyx_v_trace.memview)) __PYX_ERR(0, 387, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("gridSamples", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 385, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("gridSamples", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 387, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.gridSamples", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 385, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 387, __pyx_L1_error)
   __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(__pyx_self, __pyx_v_grid, __pyx_v_trace);
 
   /* function exit code */
@@ -7161,21 +7218,21 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
   Py_ssize_t __pyx_t_17;
   __Pyx_RefNannySetupContext("gridSamples", 0);
 
-  /* "pycompass/SNE/pdf.pyx":387
+  /* "pycompass/SNE/pdf.pyx":389
  * def gridSamples(np.ndarray grid, double[:,:] trace):
  *     #create location for output
  *     cdef double[:] out = np.zeros([grid.shape[1]])             # <<<<<<<<<<<<<<
  * 
  *     #calculate bin dimensions
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t((__pyx_v_grid->dimensions[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
@@ -7191,14 +7248,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
     }
   }
   if (!__pyx_t_2) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_2, __pyx_t_4};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -7207,33 +7264,33 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_2, __pyx_t_4};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 387, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 389, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2); __pyx_t_2 = NULL;
       __Pyx_GIVEREF(__pyx_t_4);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
-  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 387, __pyx_L1_error)
+  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_out = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "pycompass/SNE/pdf.pyx":390
+  /* "pycompass/SNE/pdf.pyx":392
  * 
  *     #calculate bin dimensions
  *     cdef int N = int(sqrt(grid.shape[1]))             # <<<<<<<<<<<<<<
@@ -7242,7 +7299,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
   __pyx_v_N = ((int)sqrt((__pyx_v_grid->dimensions[1])));
 
-  /* "pycompass/SNE/pdf.pyx":391
+  /* "pycompass/SNE/pdf.pyx":393
  *     #calculate bin dimensions
  *     cdef int N = int(sqrt(grid.shape[1]))
  *     cdef double dl = pi / sqrt(grid.shape[1]) #latitude and longitude range from -np.pi / 2 to pi/2             # <<<<<<<<<<<<<<
@@ -7251,7 +7308,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
   __pyx_v_dl = (__pyx_v_9pycompass_3SNE_3pdf_pi / sqrt((__pyx_v_grid->dimensions[1])));
 
-  /* "pycompass/SNE/pdf.pyx":395
+  /* "pycompass/SNE/pdf.pyx":397
  *     #map phi/theta of each sample onto grid (this becomes a 2D histogram)
  *     cdef int idx
  *     cdef double df = 1.0 / len(trace) #how much is each sample worth?             # <<<<<<<<<<<<<<
@@ -7261,7 +7318,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
   __pyx_t_7 = __Pyx_MemoryView_Len(__pyx_v_trace); 
   __pyx_v_df = (1.0 / __pyx_t_7);
 
-  /* "pycompass/SNE/pdf.pyx":396
+  /* "pycompass/SNE/pdf.pyx":398
  *     cdef int idx
  *     cdef double df = 1.0 / len(trace) #how much is each sample worth?
  *     cdef double hp = pi/2.0 #pi on two             # <<<<<<<<<<<<<<
@@ -7270,7 +7327,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
   __pyx_v_hp = (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0);
 
-  /* "pycompass/SNE/pdf.pyx":399
+  /* "pycompass/SNE/pdf.pyx":401
  *     cdef double x,y
  *     cdef double lat,lon
  *     cdef int i = 0             # <<<<<<<<<<<<<<
@@ -7279,7 +7336,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
   __pyx_v_i = 0;
 
-  /* "pycompass/SNE/pdf.pyx":400
+  /* "pycompass/SNE/pdf.pyx":402
  *     cdef double lat,lon
  *     cdef int i = 0
  *     for i in range(len(trace)):             # <<<<<<<<<<<<<<
@@ -7290,7 +7347,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
   for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_i = __pyx_t_8;
 
-    /* "pycompass/SNE/pdf.pyx":402
+    /* "pycompass/SNE/pdf.pyx":404
  *     for i in range(len(trace)):
  *         #convert to cartesian coords (n.b. we don't need to worry about z as we know this is a unit vector!)
  *         x = sin(trace[i,0]) * cos(trace[i,1])             # <<<<<<<<<<<<<<
@@ -7303,7 +7360,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
     __pyx_t_12 = 1;
     __pyx_v_x = (sin((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_trace.data + __pyx_t_9 * __pyx_v_trace.strides[0]) ) + __pyx_t_10 * __pyx_v_trace.strides[1]) )))) * cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_trace.data + __pyx_t_11 * __pyx_v_trace.strides[0]) ) + __pyx_t_12 * __pyx_v_trace.strides[1]) )))));
 
-    /* "pycompass/SNE/pdf.pyx":403
+    /* "pycompass/SNE/pdf.pyx":405
  *         #convert to cartesian coords (n.b. we don't need to worry about z as we know this is a unit vector!)
  *         x = sin(trace[i,0]) * cos(trace[i,1])
  *         y = cos(trace[i,0]) * cos(trace[i,1])             # <<<<<<<<<<<<<<
@@ -7316,7 +7373,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
     __pyx_t_16 = 1;
     __pyx_v_y = (cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_trace.data + __pyx_t_13 * __pyx_v_trace.strides[0]) ) + __pyx_t_14 * __pyx_v_trace.strides[1]) )))) * cos((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_trace.data + __pyx_t_15 * __pyx_v_trace.strides[0]) ) + __pyx_t_16 * __pyx_v_trace.strides[1]) )))));
 
-    /* "pycompass/SNE/pdf.pyx":406
+    /* "pycompass/SNE/pdf.pyx":408
  * 
  *         #convert these to lat,lon
  *         lat = asin(y)             # <<<<<<<<<<<<<<
@@ -7325,7 +7382,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
     __pyx_v_lat = asin(__pyx_v_y);
 
-    /* "pycompass/SNE/pdf.pyx":407
+    /* "pycompass/SNE/pdf.pyx":409
  *         #convert these to lat,lon
  *         lat = asin(y)
  *         lon = asin(x/cos(lat))             # <<<<<<<<<<<<<<
@@ -7334,7 +7391,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
     __pyx_v_lon = asin((__pyx_v_x / cos(__pyx_v_lat)));
 
-    /* "pycompass/SNE/pdf.pyx":410
+    /* "pycompass/SNE/pdf.pyx":412
  * 
  *         #calculate the index of the relevant bin
  *         idx = <int>((lon+hp)/dl) * N + <int>((lat+hp)/dl)             # <<<<<<<<<<<<<<
@@ -7343,7 +7400,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  */
     __pyx_v_idx = ((((int)((__pyx_v_lon + __pyx_v_hp) / __pyx_v_dl)) * __pyx_v_N) + ((int)((__pyx_v_lat + __pyx_v_hp) / __pyx_v_dl)));
 
-    /* "pycompass/SNE/pdf.pyx":413
+    /* "pycompass/SNE/pdf.pyx":415
  * 
  *         #increment frequency
  *         out[idx] += df             # <<<<<<<<<<<<<<
@@ -7354,7 +7411,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
     *((double *) ( /* dim=0 */ (__pyx_v_out.data + __pyx_t_17 * __pyx_v_out.strides[0]) )) += __pyx_v_df;
   }
 
-  /* "pycompass/SNE/pdf.pyx":416
+  /* "pycompass/SNE/pdf.pyx":418
  * 
  *     #return histogram :)
  *     return out             # <<<<<<<<<<<<<<
@@ -7362,13 +7419,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
  * ########################################################################################
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_out, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 416, __pyx_L1_error)
+  __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_out, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 418, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":385
+  /* "pycompass/SNE/pdf.pyx":387
  * -a density grid for plotting with mplstereneot.contourf or similar. Density values will sum to 1 over the domain.
  * """
  * def gridSamples(np.ndarray grid, double[:,:] trace):             # <<<<<<<<<<<<<<
@@ -7394,7 +7451,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_16gridSamples(CYTHON_UNUSED PyObj
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":424
+/* "pycompass/SNE/pdf.pyx":426
  * Utility function for creating covariance matrices from phi,theta, etc.
  * """
  * def constructCOV(double phi, double theta, double alpha, double e1, double e2, double e3 ):             # <<<<<<<<<<<<<<
@@ -7446,35 +7503,35 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_19constructCOV(PyObject *__pyx_se
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_theta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 1); __PYX_ERR(0, 424, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 1); __PYX_ERR(0, 426, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_alpha)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 2); __PYX_ERR(0, 424, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 2); __PYX_ERR(0, 426, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e1)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 3); __PYX_ERR(0, 424, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 3); __PYX_ERR(0, 426, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e2)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 4); __PYX_ERR(0, 424, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 4); __PYX_ERR(0, 426, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
         if (likely((values[5] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_e3)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 5); __PYX_ERR(0, 424, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, 5); __PYX_ERR(0, 426, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "constructCOV") < 0)) __PYX_ERR(0, 424, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "constructCOV") < 0)) __PYX_ERR(0, 426, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 6) {
       goto __pyx_L5_argtuple_error;
@@ -7486,16 +7543,16 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_19constructCOV(PyObject *__pyx_se
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
       values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
     }
-    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
-    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
-    __pyx_v_alpha = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
-    __pyx_v_e1 = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_e1 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
-    __pyx_v_e2 = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_e2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
-    __pyx_v_e3 = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_e3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 424, __pyx_L3_error)
+    __pyx_v_phi = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_phi == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
+    __pyx_v_theta = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_theta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
+    __pyx_v_alpha = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
+    __pyx_v_e1 = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_e1 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
+    __pyx_v_e2 = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_e2 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
+    __pyx_v_e3 = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_e3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 426, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 424, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("constructCOV", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 426, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.constructCOV", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -7536,7 +7593,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("constructCOV", 0);
 
-  /* "pycompass/SNE/pdf.pyx":428
+  /* "pycompass/SNE/pdf.pyx":430
  *     cdef double e11,e12,e13,e21,e22,e23,e31,e32,e33
  *     #eigenvector 3
  *     e13 = sin(phi) * cos(theta)             # <<<<<<<<<<<<<<
@@ -7545,7 +7602,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e13 = (sin(__pyx_v_phi) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":429
+  /* "pycompass/SNE/pdf.pyx":431
  *     #eigenvector 3
  *     e13 = sin(phi) * cos(theta)
  *     e23 = cos(phi) * cos(theta)             # <<<<<<<<<<<<<<
@@ -7554,7 +7611,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e23 = (cos(__pyx_v_phi) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":430
+  /* "pycompass/SNE/pdf.pyx":432
  *     e13 = sin(phi) * cos(theta)
  *     e23 = cos(phi) * cos(theta)
  *     e33 = -sin(theta)             # <<<<<<<<<<<<<<
@@ -7563,7 +7620,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e33 = (-sin(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":432
+  /* "pycompass/SNE/pdf.pyx":434
  *     e33 = -sin(theta)
  *     #eigenvector 2
  *     e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)             # <<<<<<<<<<<<<<
@@ -7572,7 +7629,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e12 = (((sin(__pyx_v_phi) * sin(__pyx_v_theta)) * sin(__pyx_v_alpha)) - (cos(__pyx_v_phi) * cos(__pyx_v_alpha)));
 
-  /* "pycompass/SNE/pdf.pyx":433
+  /* "pycompass/SNE/pdf.pyx":435
  *     #eigenvector 2
  *     e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)
  *     e22 = sin(phi) * cos(alpha) + sin(theta) * cos(phi) * sin(alpha)             # <<<<<<<<<<<<<<
@@ -7581,7 +7638,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e22 = ((sin(__pyx_v_phi) * cos(__pyx_v_alpha)) + ((sin(__pyx_v_theta) * cos(__pyx_v_phi)) * sin(__pyx_v_alpha)));
 
-  /* "pycompass/SNE/pdf.pyx":434
+  /* "pycompass/SNE/pdf.pyx":436
  *     e12 = sin(phi) * sin(theta) * sin(alpha) - cos(phi) * cos(alpha)
  *     e22 = sin(phi) * cos(alpha) + sin(theta) * cos(phi) * sin(alpha)
  *     e32 = sin(alpha) * cos(theta)             # <<<<<<<<<<<<<<
@@ -7590,7 +7647,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e32 = (sin(__pyx_v_alpha) * cos(__pyx_v_theta));
 
-  /* "pycompass/SNE/pdf.pyx":436
+  /* "pycompass/SNE/pdf.pyx":438
  *     e32 = sin(alpha) * cos(theta)
  *     #eigenvector 1 (calculate using cross product to avoid using un-necessary trig functions)
  *     e11 = e23 * e32 - e33 * e22             # <<<<<<<<<<<<<<
@@ -7599,7 +7656,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e11 = ((__pyx_v_e23 * __pyx_v_e32) - (__pyx_v_e33 * __pyx_v_e22));
 
-  /* "pycompass/SNE/pdf.pyx":437
+  /* "pycompass/SNE/pdf.pyx":439
  *     #eigenvector 1 (calculate using cross product to avoid using un-necessary trig functions)
  *     e11 = e23 * e32 - e33 * e22
  *     e21 = e33*e12 - e13 * e32             # <<<<<<<<<<<<<<
@@ -7608,7 +7665,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e21 = ((__pyx_v_e33 * __pyx_v_e12) - (__pyx_v_e13 * __pyx_v_e32));
 
-  /* "pycompass/SNE/pdf.pyx":438
+  /* "pycompass/SNE/pdf.pyx":440
  *     e11 = e23 * e32 - e33 * e22
  *     e21 = e33*e12 - e13 * e32
  *     e31 = e13*e22 - e23 * e12             # <<<<<<<<<<<<<<
@@ -7617,7 +7674,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_e31 = ((__pyx_v_e13 * __pyx_v_e22) - (__pyx_v_e23 * __pyx_v_e12));
 
-  /* "pycompass/SNE/pdf.pyx":444
+  /* "pycompass/SNE/pdf.pyx":446
  *     #(we compare this to the observed icov matrix)
  *     cdef double p11,p12,p13,p22,p23,p33
  *     p11 = (e1*e11**2 + e2 * e12**2 + e3 * e13**2)             # <<<<<<<<<<<<<<
@@ -7626,7 +7683,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p11 = (((__pyx_v_e1 * pow(__pyx_v_e11, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e12, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e13, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":445
+  /* "pycompass/SNE/pdf.pyx":447
  *     cdef double p11,p12,p13,p22,p23,p33
  *     p11 = (e1*e11**2 + e2 * e12**2 + e3 * e13**2)
  *     p12 = (e1*e11*e21 + e2 * e12 * e22 + e3 * e13 * e23)             # <<<<<<<<<<<<<<
@@ -7635,7 +7692,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p12 = ((((__pyx_v_e1 * __pyx_v_e11) * __pyx_v_e21) + ((__pyx_v_e2 * __pyx_v_e12) * __pyx_v_e22)) + ((__pyx_v_e3 * __pyx_v_e13) * __pyx_v_e23));
 
-  /* "pycompass/SNE/pdf.pyx":446
+  /* "pycompass/SNE/pdf.pyx":448
  *     p11 = (e1*e11**2 + e2 * e12**2 + e3 * e13**2)
  *     p12 = (e1*e11*e21 + e2 * e12 * e22 + e3 * e13 * e23)
  *     p13 = (e1*e11*e31 + e2 * e12 * e32 + e3 * e13 * e33)             # <<<<<<<<<<<<<<
@@ -7644,7 +7701,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p13 = ((((__pyx_v_e1 * __pyx_v_e11) * __pyx_v_e31) + ((__pyx_v_e2 * __pyx_v_e12) * __pyx_v_e32)) + ((__pyx_v_e3 * __pyx_v_e13) * __pyx_v_e33));
 
-  /* "pycompass/SNE/pdf.pyx":447
+  /* "pycompass/SNE/pdf.pyx":449
  *     p12 = (e1*e11*e21 + e2 * e12 * e22 + e3 * e13 * e23)
  *     p13 = (e1*e11*e31 + e2 * e12 * e32 + e3 * e13 * e33)
  *     p22 = (e1*e21**2 + e2 * e22**2 + e3 * e23**2)             # <<<<<<<<<<<<<<
@@ -7653,7 +7710,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p22 = (((__pyx_v_e1 * pow(__pyx_v_e21, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e22, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e23, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":448
+  /* "pycompass/SNE/pdf.pyx":450
  *     p13 = (e1*e11*e31 + e2 * e12 * e32 + e3 * e13 * e33)
  *     p22 = (e1*e21**2 + e2 * e22**2 + e3 * e23**2)
  *     p23 = (e1*e21*e31 + e2 * e22 * e32 + e3 * e23 * e33)             # <<<<<<<<<<<<<<
@@ -7662,7 +7719,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p23 = ((((__pyx_v_e1 * __pyx_v_e21) * __pyx_v_e31) + ((__pyx_v_e2 * __pyx_v_e22) * __pyx_v_e32)) + ((__pyx_v_e3 * __pyx_v_e23) * __pyx_v_e33));
 
-  /* "pycompass/SNE/pdf.pyx":449
+  /* "pycompass/SNE/pdf.pyx":451
  *     p22 = (e1*e21**2 + e2 * e22**2 + e3 * e23**2)
  *     p23 = (e1*e21*e31 + e2 * e22 * e32 + e3 * e23 * e33)
  *     p33 = (e1*e31**2 + e2 * e32**2 + e3 * e33**2)             # <<<<<<<<<<<<<<
@@ -7671,7 +7728,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  */
   __pyx_v_p33 = (((__pyx_v_e1 * pow(__pyx_v_e31, 2.0)) + (__pyx_v_e2 * pow(__pyx_v_e32, 2.0))) + (__pyx_v_e3 * pow(__pyx_v_e33, 2.0)));
 
-  /* "pycompass/SNE/pdf.pyx":451
+  /* "pycompass/SNE/pdf.pyx":453
  *     p33 = (e1*e31**2 + e2 * e32**2 + e3 * e33**2)
  * 
  *     return np.array([[p11,p12,p13],[p12,p22,p23],[p13,p23,p33]])             # <<<<<<<<<<<<<<
@@ -7679,18 +7736,18 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p11); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p11); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p12); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p12); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p13); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p13); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = PyList_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_6 = PyList_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
@@ -7701,13 +7758,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   __pyx_t_2 = 0;
   __pyx_t_4 = 0;
   __pyx_t_5 = 0;
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p12); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p12); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p22); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p22); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p23); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p23); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = PyList_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_GIVEREF(__pyx_t_5);
   PyList_SET_ITEM(__pyx_t_7, 0, __pyx_t_5);
@@ -7718,13 +7775,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   __pyx_t_5 = 0;
   __pyx_t_4 = 0;
   __pyx_t_2 = 0;
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p13); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_p13); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p23); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_p23); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p33); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_p33); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_8 = PyList_New(3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_8, 0, __pyx_t_2);
@@ -7735,7 +7792,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   __pyx_t_2 = 0;
   __pyx_t_4 = 0;
   __pyx_t_5 = 0;
-  __pyx_t_5 = PyList_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = PyList_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_6);
   PyList_SET_ITEM(__pyx_t_5, 0, __pyx_t_6);
@@ -7757,14 +7814,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
     }
   }
   if (!__pyx_t_8) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 451, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 453, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_t_5};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 451, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 453, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -7773,20 +7830,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_t_5};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 451, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 453, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else
     #endif
     {
-      __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 451, __pyx_L1_error)
+      __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 453, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_8); __pyx_t_8 = NULL;
       __Pyx_GIVEREF(__pyx_t_5);
       PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_t_5);
       __pyx_t_5 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 451, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 453, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     }
@@ -7796,7 +7853,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":424
+  /* "pycompass/SNE/pdf.pyx":426
  * Utility function for creating covariance matrices from phi,theta, etc.
  * """
  * def constructCOV(double phi, double theta, double alpha, double e1, double e2, double e3 ):             # <<<<<<<<<<<<<<
@@ -7822,7 +7879,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_18constructCOV(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":461
+/* "pycompass/SNE/pdf.pyx":463
  *  - a grid of points such that each column represents a lat,long pair on the southern-hemisphere.
  * """
  * def grid(N=50):             # <<<<<<<<<<<<<<
@@ -7860,7 +7917,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_21grid(PyObject *__pyx_self, PyOb
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grid") < 0)) __PYX_ERR(0, 461, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grid") < 0)) __PYX_ERR(0, 463, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -7874,7 +7931,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_21grid(PyObject *__pyx_self, PyOb
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("grid", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 461, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("grid", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 463, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.grid", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -7912,7 +7969,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   PyObject *(*__pyx_t_14)(PyObject *);
   __Pyx_RefNannySetupContext("grid", 0);
 
-  /* "pycompass/SNE/pdf.pyx":462
+  /* "pycompass/SNE/pdf.pyx":464
  * """
  * def grid(N=50):
  *     bound = pi / 2.0             # <<<<<<<<<<<<<<
@@ -7921,21 +7978,21 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
  */
   __pyx_v_bound = (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0);
 
-  /* "pycompass/SNE/pdf.pyx":463
+  /* "pycompass/SNE/pdf.pyx":465
  * def grid(N=50):
  *     bound = pi / 2.0
  *     grid = np.zeros((2,N**2),dtype=np.double)             # <<<<<<<<<<<<<<
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd
  *         for iy,_lon in enumerate(np.linspace(-bound,bound,N)): #loop through y-values in grd
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_Power(__pyx_v_N, __pyx_int_2, Py_None); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Power(__pyx_v_N, __pyx_int_2, Py_None); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_int_2);
   __Pyx_GIVEREF(__pyx_int_2);
@@ -7943,21 +8000,21 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
   __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_double); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_double); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 463, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 465, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -7965,7 +8022,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   __pyx_v_grid = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":464
+  /* "pycompass/SNE/pdf.pyx":466
  *     bound = pi / 2.0
  *     grid = np.zeros((2,N**2),dtype=np.double)
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd             # <<<<<<<<<<<<<<
@@ -7974,14 +8031,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_5 = __pyx_int_0;
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 464, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 466, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_linspace); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 464, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_linspace); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 466, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble((-__pyx_v_bound)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 464, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble((-__pyx_v_bound)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 466, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_bound); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 464, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_bound); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 466, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_6 = NULL;
   __pyx_t_7 = 0;
@@ -7998,7 +8055,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[4] = {__pyx_t_6, __pyx_t_1, __pyx_t_4, __pyx_v_N};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8008,7 +8065,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[4] = {__pyx_t_6, __pyx_t_1, __pyx_t_4, __pyx_v_N};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8016,7 +8073,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   } else
   #endif
   {
-    __pyx_t_8 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_8 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     if (__pyx_t_6) {
       __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -8030,7 +8087,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     PyTuple_SET_ITEM(__pyx_t_8, 2+__pyx_t_7, __pyx_v_N);
     __pyx_t_1 = 0;
     __pyx_t_4 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
@@ -8039,9 +8096,9 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     __pyx_t_2 = __pyx_t_3; __Pyx_INCREF(__pyx_t_2); __pyx_t_9 = 0;
     __pyx_t_10 = NULL;
   } else {
-    __pyx_t_9 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_9 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_10 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_10 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 466, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   for (;;) {
@@ -8049,17 +8106,17 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_9 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_9); __Pyx_INCREF(__pyx_t_3); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_9); __Pyx_INCREF(__pyx_t_3); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 466, __pyx_L1_error)
         #else
-        __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         #endif
       } else {
         if (__pyx_t_9 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_9); __Pyx_INCREF(__pyx_t_3); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_9); __Pyx_INCREF(__pyx_t_3); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 466, __pyx_L1_error)
         #else
-        __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         #endif
       }
@@ -8069,7 +8126,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 464, __pyx_L1_error)
+          else __PYX_ERR(0, 466, __pyx_L1_error)
         }
         break;
       }
@@ -8079,13 +8136,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     __pyx_t_3 = 0;
     __Pyx_INCREF(__pyx_t_5);
     __Pyx_XDECREF_SET(__pyx_v_ix, __pyx_t_5);
-    __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_t_5, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_t_5, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5);
     __pyx_t_5 = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":465
+    /* "pycompass/SNE/pdf.pyx":467
  *     grid = np.zeros((2,N**2),dtype=np.double)
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd
  *         for iy,_lon in enumerate(np.linspace(-bound,bound,N)): #loop through y-values in grd             # <<<<<<<<<<<<<<
@@ -8094,14 +8151,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
  */
     __Pyx_INCREF(__pyx_int_0);
     __pyx_t_3 = __pyx_int_0;
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 465, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 467, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_linspace); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 465, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_linspace); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 467, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyFloat_FromDouble((-__pyx_v_bound)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 465, __pyx_L1_error)
+    __pyx_t_4 = PyFloat_FromDouble((-__pyx_v_bound)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 467, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = PyFloat_FromDouble(__pyx_v_bound); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 465, __pyx_L1_error)
+    __pyx_t_6 = PyFloat_FromDouble(__pyx_v_bound); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 467, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_11 = NULL;
     __pyx_t_7 = 0;
@@ -8118,7 +8175,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[4] = {__pyx_t_11, __pyx_t_4, __pyx_t_6, __pyx_v_N};
-      __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -8128,7 +8185,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[4] = {__pyx_t_11, __pyx_t_4, __pyx_t_6, __pyx_v_N};
-      __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -8136,7 +8193,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     } else
     #endif
     {
-      __pyx_t_12 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_12 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_12);
       if (__pyx_t_11) {
         __Pyx_GIVEREF(__pyx_t_11); PyTuple_SET_ITEM(__pyx_t_12, 0, __pyx_t_11); __pyx_t_11 = NULL;
@@ -8150,7 +8207,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       PyTuple_SET_ITEM(__pyx_t_12, 2+__pyx_t_7, __pyx_v_N);
       __pyx_t_4 = 0;
       __pyx_t_6 = 0;
-      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_12, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_12, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
     }
@@ -8159,9 +8216,9 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       __pyx_t_1 = __pyx_t_8; __Pyx_INCREF(__pyx_t_1); __pyx_t_13 = 0;
       __pyx_t_14 = NULL;
     } else {
-      __pyx_t_13 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_13 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_14 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_14 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 467, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     for (;;) {
@@ -8169,17 +8226,17 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
         if (likely(PyList_CheckExact(__pyx_t_1))) {
           if (__pyx_t_13 >= PyList_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_8 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_13); __Pyx_INCREF(__pyx_t_8); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 465, __pyx_L1_error)
+          __pyx_t_8 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_13); __Pyx_INCREF(__pyx_t_8); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 467, __pyx_L1_error)
           #else
-          __pyx_t_8 = PySequence_ITEM(__pyx_t_1, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+          __pyx_t_8 = PySequence_ITEM(__pyx_t_1, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           #endif
         } else {
           if (__pyx_t_13 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_13); __Pyx_INCREF(__pyx_t_8); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 465, __pyx_L1_error)
+          __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_13); __Pyx_INCREF(__pyx_t_8); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 467, __pyx_L1_error)
           #else
-          __pyx_t_8 = PySequence_ITEM(__pyx_t_1, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+          __pyx_t_8 = PySequence_ITEM(__pyx_t_1, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           #endif
         }
@@ -8189,7 +8246,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 465, __pyx_L1_error)
+            else __PYX_ERR(0, 467, __pyx_L1_error)
           }
           break;
         }
@@ -8199,25 +8256,25 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       __pyx_t_8 = 0;
       __Pyx_INCREF(__pyx_t_3);
       __Pyx_XDECREF_SET(__pyx_v_iy, __pyx_t_3);
-      __pyx_t_8 = __Pyx_PyInt_AddObjC(__pyx_t_3, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 465, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyInt_AddObjC(__pyx_t_3, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_3);
       __pyx_t_3 = __pyx_t_8;
       __pyx_t_8 = 0;
 
-      /* "pycompass/SNE/pdf.pyx":466
+      /* "pycompass/SNE/pdf.pyx":468
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd
  *         for iy,_lon in enumerate(np.linspace(-bound,bound,N)): #loop through y-values in grd
  *             grid[0,iy*N+ix] = _lat             # <<<<<<<<<<<<<<
  *             grid[1,iy*N+ix] = _lon
  *     return grid
  */
-      __pyx_t_8 = PyNumber_Multiply(__pyx_v_iy, __pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 466, __pyx_L1_error)
+      __pyx_t_8 = PyNumber_Multiply(__pyx_v_iy, __pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 468, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_12 = PyNumber_Add(__pyx_t_8, __pyx_v_ix); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 466, __pyx_L1_error)
+      __pyx_t_12 = PyNumber_Add(__pyx_t_8, __pyx_v_ix); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 468, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_12);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 466, __pyx_L1_error)
+      __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 468, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_INCREF(__pyx_int_0);
       __Pyx_GIVEREF(__pyx_int_0);
@@ -8225,22 +8282,22 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       __Pyx_GIVEREF(__pyx_t_12);
       PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_t_12);
       __pyx_t_12 = 0;
-      if (unlikely(PyObject_SetItem(__pyx_v_grid, __pyx_t_8, __pyx_v__lat) < 0)) __PYX_ERR(0, 466, __pyx_L1_error)
+      if (unlikely(PyObject_SetItem(__pyx_v_grid, __pyx_t_8, __pyx_v__lat) < 0)) __PYX_ERR(0, 468, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "pycompass/SNE/pdf.pyx":467
+      /* "pycompass/SNE/pdf.pyx":469
  *         for iy,_lon in enumerate(np.linspace(-bound,bound,N)): #loop through y-values in grd
  *             grid[0,iy*N+ix] = _lat
  *             grid[1,iy*N+ix] = _lon             # <<<<<<<<<<<<<<
  *     return grid
  * 
  */
-      __pyx_t_8 = PyNumber_Multiply(__pyx_v_iy, __pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
+      __pyx_t_8 = PyNumber_Multiply(__pyx_v_iy, __pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 469, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_12 = PyNumber_Add(__pyx_t_8, __pyx_v_ix); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 467, __pyx_L1_error)
+      __pyx_t_12 = PyNumber_Add(__pyx_t_8, __pyx_v_ix); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 469, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_12);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 467, __pyx_L1_error)
+      __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 469, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_INCREF(__pyx_int_1);
       __Pyx_GIVEREF(__pyx_int_1);
@@ -8248,10 +8305,10 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
       __Pyx_GIVEREF(__pyx_t_12);
       PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_t_12);
       __pyx_t_12 = 0;
-      if (unlikely(PyObject_SetItem(__pyx_v_grid, __pyx_t_8, __pyx_v__lon) < 0)) __PYX_ERR(0, 467, __pyx_L1_error)
+      if (unlikely(PyObject_SetItem(__pyx_v_grid, __pyx_t_8, __pyx_v__lon) < 0)) __PYX_ERR(0, 469, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "pycompass/SNE/pdf.pyx":465
+      /* "pycompass/SNE/pdf.pyx":467
  *     grid = np.zeros((2,N**2),dtype=np.double)
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd
  *         for iy,_lon in enumerate(np.linspace(-bound,bound,N)): #loop through y-values in grd             # <<<<<<<<<<<<<<
@@ -8262,7 +8319,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":464
+    /* "pycompass/SNE/pdf.pyx":466
  *     bound = pi / 2.0
  *     grid = np.zeros((2,N**2),dtype=np.double)
  *     for ix,_lat in enumerate(np.linspace(-bound,bound,N)): #loop through x-values in grd             # <<<<<<<<<<<<<<
@@ -8273,7 +8330,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":468
+  /* "pycompass/SNE/pdf.pyx":470
  *             grid[0,iy*N+ix] = _lat
  *             grid[1,iy*N+ix] = _lon
  *     return grid             # <<<<<<<<<<<<<<
@@ -8285,7 +8342,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   __pyx_r = __pyx_v_grid;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":461
+  /* "pycompass/SNE/pdf.pyx":463
  *  - a grid of points such that each column represents a lat,long pair on the southern-hemisphere.
  * """
  * def grid(N=50):             # <<<<<<<<<<<<<<
@@ -8317,7 +8374,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_20grid(CYTHON_UNUSED PyObject *__
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":483
+/* "pycompass/SNE/pdf.pyx":485
  *  - A numpy array with N rows and columns representing the latitude and longitude of the points.
  * """
  * def gridArc(double[:,:] cov,int N=50):             # <<<<<<<<<<<<<<
@@ -8361,7 +8418,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_23gridArc(PyObject *__pyx_self, P
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "gridArc") < 0)) __PYX_ERR(0, 483, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "gridArc") < 0)) __PYX_ERR(0, 485, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -8372,16 +8429,16 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_23gridArc(PyObject *__pyx_self, P
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_cov = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_cov.memview)) __PYX_ERR(0, 483, __pyx_L3_error)
+    __pyx_v_cov = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_cov.memview)) __PYX_ERR(0, 485, __pyx_L3_error)
     if (values[1]) {
-      __pyx_v_N = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_N == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 483, __pyx_L3_error)
+      __pyx_v_N = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_N == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 485, __pyx_L3_error)
     } else {
       __pyx_v_N = ((int)50);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("gridArc", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 483, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("gridArc", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 485, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.gridArc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -8422,22 +8479,22 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   double __pyx_t_12;
   __Pyx_RefNannySetupContext("gridArc", 0);
 
-  /* "pycompass/SNE/pdf.pyx":485
+  /* "pycompass/SNE/pdf.pyx":487
  * def gridArc(double[:,:] cov,int N=50):
  *     #get eigens of icov
  *     eval,evec = np.linalg.eig(cov)             # <<<<<<<<<<<<<<
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 487, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 487, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_eig); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_eig); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 487, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_cov, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
+  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_cov, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 487, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -8450,14 +8507,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 485, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 487, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 485, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 487, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -8466,20 +8523,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 485, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 487, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 485, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 487, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 485, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 487, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
@@ -8495,7 +8552,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 485, __pyx_L1_error)
+      __PYX_ERR(0, 487, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -8508,15 +8565,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_INCREF(__pyx_t_2);
     __Pyx_INCREF(__pyx_t_5);
     #else
-    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 487, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 485, __pyx_L1_error)
+    __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 487, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     #endif
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
+    __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 487, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_6 = Py_TYPE(__pyx_t_3)->tp_iternext;
@@ -8524,7 +8581,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_GOTREF(__pyx_t_2);
     index = 1; __pyx_t_5 = __pyx_t_6(__pyx_t_3); if (unlikely(!__pyx_t_5)) goto __pyx_L3_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_5);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_3), 2) < 0) __PYX_ERR(0, 485, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_3), 2) < 0) __PYX_ERR(0, 487, __pyx_L1_error)
     __pyx_t_6 = NULL;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     goto __pyx_L4_unpacking_done;
@@ -8532,7 +8589,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_6 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 485, __pyx_L1_error)
+    __PYX_ERR(0, 487, __pyx_L1_error)
     __pyx_L4_unpacking_done:;
   }
   __pyx_v_eval = __pyx_t_2;
@@ -8540,14 +8597,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __pyx_v_evec = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":486
+  /* "pycompass/SNE/pdf.pyx":488
  *     #get eigens of icov
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...             # <<<<<<<<<<<<<<
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_eval, __pyx_n_s_argsort); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 486, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_eval, __pyx_n_s_argsort); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 488, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_2 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -8560,39 +8617,39 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     }
   }
   if (__pyx_t_2) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 486, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 488, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   } else {
-    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 486, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 488, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = PyObject_GetItem(__pyx_t_1, __pyx_slice__13); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 486, __pyx_L1_error)
+  __pyx_t_5 = PyObject_GetItem(__pyx_t_1, __pyx_slice__13); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 488, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_idx = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":487
+  /* "pycompass/SNE/pdf.pyx":489
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]             # <<<<<<<<<<<<<<
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  * 
  */
-  __pyx_t_5 = PyObject_GetItem(__pyx_v_eval, __pyx_v_idx); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 487, __pyx_L1_error)
+  __pyx_t_5 = PyObject_GetItem(__pyx_v_eval, __pyx_v_idx); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 489, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF_SET(__pyx_v_eval, __pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":488
+  /* "pycompass/SNE/pdf.pyx":490
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....             # <<<<<<<<<<<<<<
  * 
  *     #get rotation axis (w)
  */
-  __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 488, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 490, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_slice__14);
   __Pyx_GIVEREF(__pyx_slice__14);
@@ -8600,42 +8657,42 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __Pyx_INCREF(__pyx_v_idx);
   __Pyx_GIVEREF(__pyx_v_idx);
   PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_v_idx);
-  __pyx_t_1 = PyObject_GetItem(__pyx_v_evec, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 488, __pyx_L1_error)
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_evec, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 490, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF_SET(__pyx_v_evec, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":491
+  /* "pycompass/SNE/pdf.pyx":493
  * 
  *     #get rotation axis (w)
  *     W = evec[:,0]             # <<<<<<<<<<<<<<
  * 
  *     #get start vector (A)
  */
-  __pyx_t_1 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__16); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 491, __pyx_L1_error)
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_evec, __pyx_tuple__16); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 493, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_W = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":494
+  /* "pycompass/SNE/pdf.pyx":496
  * 
  *     #get start vector (A)
  *     A = np.cross(np.array([0,0,1]),W)             # <<<<<<<<<<<<<<
  *     A /= np.linalg.norm(A) #normalize A
  * 
  */
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 494, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_cross); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 494, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_cross); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 494, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 494, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyList_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 494, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -8657,14 +8714,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     }
   }
   if (!__pyx_t_7) {
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 494, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 496, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_5);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_3};
-      __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 494, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 496, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -8673,20 +8730,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_3};
-      __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 494, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 496, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_8 = PyTuple_New(1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 494, __pyx_L1_error)
+      __pyx_t_8 = PyTuple_New(1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 496, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_7); __pyx_t_7 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_8, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 494, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 496, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
@@ -8707,7 +8764,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_t_5, __pyx_v_W};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 494, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 496, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -8716,14 +8773,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_t_5, __pyx_v_W};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 494, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 496, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   } else
   #endif
   {
-    __pyx_t_8 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 494, __pyx_L1_error)
+    __pyx_t_8 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 496, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     if (__pyx_t_4) {
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -8734,7 +8791,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_GIVEREF(__pyx_v_W);
     PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_9, __pyx_v_W);
     __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 494, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 496, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
@@ -8742,19 +8799,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __pyx_v_A = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":495
+  /* "pycompass/SNE/pdf.pyx":497
  *     #get start vector (A)
  *     A = np.cross(np.array([0,0,1]),W)
  *     A /= np.linalg.norm(A) #normalize A             # <<<<<<<<<<<<<<
  * 
  *     #create array to store output
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 495, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 497, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 495, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linalg); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 497, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_norm); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 495, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_norm); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 497, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_t_8 = NULL;
@@ -8768,13 +8825,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     }
   }
   if (!__pyx_t_8) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_A); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 495, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_A); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 497, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_v_A};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 495, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 497, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
@@ -8782,45 +8839,45 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_v_A};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 495, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 497, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 495, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 497, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_8); __pyx_t_8 = NULL;
       __Pyx_INCREF(__pyx_v_A);
       __Pyx_GIVEREF(__pyx_v_A);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_A);
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 495, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 497, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyNumber_InPlaceDivide(__pyx_v_A, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 495, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyNumber_InPlaceDivide(__pyx_v_A, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 497, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF_SET(__pyx_v_A, __pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":498
+  /* "pycompass/SNE/pdf.pyx":500
  * 
  *     #create array to store output
  *     arc = np.zeros((2,N))             # <<<<<<<<<<<<<<
  * 
  *     #progressively rotate A by alpha around axis W
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 498, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 500, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 498, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 500, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_N); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 498, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_N); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 500, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 498, __pyx_L1_error)
+  __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 500, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_INCREF(__pyx_int_2);
   __Pyx_GIVEREF(__pyx_int_2);
@@ -8839,14 +8896,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     }
   }
   if (!__pyx_t_1) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 498, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 500, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_8};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 498, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 500, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -8855,20 +8912,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[2] = {__pyx_t_1, __pyx_t_8};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 498, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 500, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     } else
     #endif
     {
-      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 498, __pyx_L1_error)
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 500, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1); __pyx_t_1 = NULL;
       __Pyx_GIVEREF(__pyx_t_8);
       PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_t_8);
       __pyx_t_8 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 498, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 500, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
@@ -8877,16 +8934,16 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __pyx_v_arc = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":501
+  /* "pycompass/SNE/pdf.pyx":503
  * 
  *     #progressively rotate A by alpha around axis W
  *     WA = np.cross(W,A)             # <<<<<<<<<<<<<<
  *     for i,alpha in enumerate(np.linspace(0,np.pi,N)):
  *         _lat,_lon = vec2LL( cos(alpha)*A + sin(alpha)*WA ) #n.b. rotation is calculated using rodruigez's rotation formula
  */
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 501, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 503, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_cross); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 501, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_cross); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 503, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_5 = NULL;
@@ -8904,7 +8961,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_W, __pyx_v_A};
-    __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 501, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 503, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else
@@ -8912,13 +8969,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_W, __pyx_v_A};
-    __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 501, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 503, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else
   #endif
   {
-    __pyx_t_8 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 501, __pyx_L1_error)
+    __pyx_t_8 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 503, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -8929,7 +8986,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_INCREF(__pyx_v_A);
     __Pyx_GIVEREF(__pyx_v_A);
     PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_9, __pyx_v_A);
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 501, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 503, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
@@ -8937,7 +8994,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __pyx_v_WA = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":502
+  /* "pycompass/SNE/pdf.pyx":504
  *     #progressively rotate A by alpha around axis W
  *     WA = np.cross(W,A)
  *     for i,alpha in enumerate(np.linspace(0,np.pi,N)):             # <<<<<<<<<<<<<<
@@ -8946,17 +9003,17 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_2 = __pyx_int_0;
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 502, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 504, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_linspace); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 502, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_linspace); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 504, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 502, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 504, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 502, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 504, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyInt_From_int(__pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 502, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyInt_From_int(__pyx_v_N); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 504, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_t_3 = NULL;
   __pyx_t_9 = 0;
@@ -8973,7 +9030,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_5)) {
     PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_int_0, __pyx_t_1, __pyx_t_8};
-    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8983,7 +9040,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
     PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_int_0, __pyx_t_1, __pyx_t_8};
-    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8991,7 +9048,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(3+__pyx_t_9); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(3+__pyx_t_9); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_3) {
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_3); __pyx_t_3 = NULL;
@@ -9005,7 +9062,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     PyTuple_SET_ITEM(__pyx_t_7, 2+__pyx_t_9, __pyx_t_8);
     __pyx_t_1 = 0;
     __pyx_t_8 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
@@ -9014,9 +9071,9 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __pyx_t_5 = __pyx_t_4; __Pyx_INCREF(__pyx_t_5); __pyx_t_10 = 0;
     __pyx_t_11 = NULL;
   } else {
-    __pyx_t_10 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_10 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_11 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_11 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 504, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   for (;;) {
@@ -9024,17 +9081,17 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       if (likely(PyList_CheckExact(__pyx_t_5))) {
         if (__pyx_t_10 >= PyList_GET_SIZE(__pyx_t_5)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_10); __Pyx_INCREF(__pyx_t_4); __pyx_t_10++; if (unlikely(0 < 0)) __PYX_ERR(0, 502, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_10); __Pyx_INCREF(__pyx_t_4); __pyx_t_10++; if (unlikely(0 < 0)) __PYX_ERR(0, 504, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_10 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_10); __Pyx_INCREF(__pyx_t_4); __pyx_t_10++; if (unlikely(0 < 0)) __PYX_ERR(0, 502, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_10); __Pyx_INCREF(__pyx_t_4); __pyx_t_10++; if (unlikely(0 < 0)) __PYX_ERR(0, 504, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -9044,7 +9101,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 502, __pyx_L1_error)
+          else __PYX_ERR(0, 504, __pyx_L1_error)
         }
         break;
       }
@@ -9054,34 +9111,34 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __pyx_t_4 = 0;
     __Pyx_INCREF(__pyx_t_2);
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_2);
-    __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_t_2, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 502, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_t_2, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2);
     __pyx_t_2 = __pyx_t_4;
     __pyx_t_4 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":503
+    /* "pycompass/SNE/pdf.pyx":505
  *     WA = np.cross(W,A)
  *     for i,alpha in enumerate(np.linspace(0,np.pi,N)):
  *         _lat,_lon = vec2LL( cos(alpha)*A + sin(alpha)*WA ) #n.b. rotation is calculated using rodruigez's rotation formula             # <<<<<<<<<<<<<<
  *         arc[0][i] = _lat
  *         arc[1][i] = -_lon
  */
-    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2LL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2LL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_12 = __pyx_PyFloat_AsDouble(__pyx_v_alpha); if (unlikely((__pyx_t_12 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 503, __pyx_L1_error)
-    __pyx_t_8 = PyFloat_FromDouble(cos(__pyx_t_12)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_12 = __pyx_PyFloat_AsDouble(__pyx_v_alpha); if (unlikely((__pyx_t_12 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 505, __pyx_L1_error)
+    __pyx_t_8 = PyFloat_FromDouble(cos(__pyx_t_12)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_1 = PyNumber_Multiply(__pyx_t_8, __pyx_v_A); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_1 = PyNumber_Multiply(__pyx_t_8, __pyx_v_A); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_12 = __pyx_PyFloat_AsDouble(__pyx_v_alpha); if (unlikely((__pyx_t_12 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 503, __pyx_L1_error)
-    __pyx_t_8 = PyFloat_FromDouble(sin(__pyx_t_12)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_12 = __pyx_PyFloat_AsDouble(__pyx_v_alpha); if (unlikely((__pyx_t_12 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 505, __pyx_L1_error)
+    __pyx_t_8 = PyFloat_FromDouble(sin(__pyx_t_12)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_3 = PyNumber_Multiply(__pyx_t_8, __pyx_v_WA); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Multiply(__pyx_t_8, __pyx_v_WA); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_8 = PyNumber_Add(__pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 503, __pyx_L1_error)
+    __pyx_t_8 = PyNumber_Add(__pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 505, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -9096,14 +9153,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       }
     }
     if (!__pyx_t_3) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 503, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 505, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_4);
     } else {
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_7)) {
         PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_t_8};
-        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 503, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 505, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -9112,20 +9169,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
         PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_t_8};
-        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 503, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 505, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       } else
       #endif
       {
-        __pyx_t_1 = PyTuple_New(1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 503, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_New(1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 505, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3); __pyx_t_3 = NULL;
         __Pyx_GIVEREF(__pyx_t_8);
         PyTuple_SET_ITEM(__pyx_t_1, 0+1, __pyx_t_8);
         __pyx_t_8 = 0;
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_1, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 503, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_1, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 505, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       }
@@ -9141,7 +9198,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 503, __pyx_L1_error)
+        __PYX_ERR(0, 505, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -9154,15 +9211,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       __Pyx_INCREF(__pyx_t_7);
       __Pyx_INCREF(__pyx_t_1);
       #else
-      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 503, __pyx_L1_error)
+      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 505, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_1 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 503, __pyx_L1_error)
+      __pyx_t_1 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 505, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       #endif
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_8 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 503, __pyx_L1_error)
+      __pyx_t_8 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 505, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_6 = Py_TYPE(__pyx_t_8)->tp_iternext;
@@ -9170,7 +9227,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       __Pyx_GOTREF(__pyx_t_7);
       index = 1; __pyx_t_1 = __pyx_t_6(__pyx_t_8); if (unlikely(!__pyx_t_1)) goto __pyx_L7_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_1);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_8), 2) < 0) __PYX_ERR(0, 503, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_8), 2) < 0) __PYX_ERR(0, 505, __pyx_L1_error)
       __pyx_t_6 = NULL;
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       goto __pyx_L8_unpacking_done;
@@ -9178,7 +9235,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __pyx_t_6 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 503, __pyx_L1_error)
+      __PYX_ERR(0, 505, __pyx_L1_error)
       __pyx_L8_unpacking_done:;
     }
     __Pyx_XDECREF_SET(__pyx_v__lat, __pyx_t_7);
@@ -9186,34 +9243,34 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
     __Pyx_XDECREF_SET(__pyx_v__lon, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":504
+    /* "pycompass/SNE/pdf.pyx":506
  *     for i,alpha in enumerate(np.linspace(0,np.pi,N)):
  *         _lat,_lon = vec2LL( cos(alpha)*A + sin(alpha)*WA ) #n.b. rotation is calculated using rodruigez's rotation formula
  *         arc[0][i] = _lat             # <<<<<<<<<<<<<<
  *         arc[1][i] = -_lon
  *     return arc #return!
  */
-    __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_arc, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 504, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_arc, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 506, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_v_i, __pyx_v__lat) < 0)) __PYX_ERR(0, 504, __pyx_L1_error)
+    if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_v_i, __pyx_v__lat) < 0)) __PYX_ERR(0, 506, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":505
+    /* "pycompass/SNE/pdf.pyx":507
  *         _lat,_lon = vec2LL( cos(alpha)*A + sin(alpha)*WA ) #n.b. rotation is calculated using rodruigez's rotation formula
  *         arc[0][i] = _lat
  *         arc[1][i] = -_lon             # <<<<<<<<<<<<<<
  *     return arc #return!
  * 
  */
-    __pyx_t_4 = PyNumber_Negative(__pyx_v__lon); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 505, __pyx_L1_error)
+    __pyx_t_4 = PyNumber_Negative(__pyx_v__lon); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 507, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_arc, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 505, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_arc, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 507, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    if (unlikely(PyObject_SetItem(__pyx_t_1, __pyx_v_i, __pyx_t_4) < 0)) __PYX_ERR(0, 505, __pyx_L1_error)
+    if (unlikely(PyObject_SetItem(__pyx_t_1, __pyx_v_i, __pyx_t_4) < 0)) __PYX_ERR(0, 507, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":502
+    /* "pycompass/SNE/pdf.pyx":504
  *     #progressively rotate A by alpha around axis W
  *     WA = np.cross(W,A)
  *     for i,alpha in enumerate(np.linspace(0,np.pi,N)):             # <<<<<<<<<<<<<<
@@ -9224,7 +9281,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":506
+  /* "pycompass/SNE/pdf.pyx":508
  *         arc[0][i] = _lat
  *         arc[1][i] = -_lon
  *     return arc #return!             # <<<<<<<<<<<<<<
@@ -9236,7 +9293,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   __pyx_r = __pyx_v_arc;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":483
+  /* "pycompass/SNE/pdf.pyx":485
  *  - A numpy array with N rows and columns representing the latitude and longitude of the points.
  * """
  * def gridArc(double[:,:] cov,int N=50):             # <<<<<<<<<<<<<<
@@ -9273,7 +9330,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_22gridArc(CYTHON_UNUSED PyObject 
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":518
+/* "pycompass/SNE/pdf.pyx":520
  *  - plunge = the plunge of the vector (in radians)
  * """
  * def vec2TrendPlunge(double[:] xyz):             # <<<<<<<<<<<<<<
@@ -9290,7 +9347,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_25vec2TrendPlunge(PyObject *__pyx
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("vec2TrendPlunge (wrapper)", 0);
   assert(__pyx_arg_xyz); {
-    __pyx_v_xyz = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_arg_xyz); if (unlikely(!__pyx_v_xyz.memview)) __PYX_ERR(0, 518, __pyx_L3_error)
+    __pyx_v_xyz = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_arg_xyz); if (unlikely(!__pyx_v_xyz.memview)) __PYX_ERR(0, 520, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9324,19 +9381,19 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
   Py_ssize_t __pyx_t_13;
   __Pyx_RefNannySetupContext("vec2TrendPlunge", 0);
 
-  /* "pycompass/SNE/pdf.pyx":519
+  /* "pycompass/SNE/pdf.pyx":521
  * """
  * def vec2TrendPlunge(double[:] xyz):
  *     cdef np.ndarray out = np.zeros([2])             # <<<<<<<<<<<<<<
  *     out[0] =  atan2(xyz[0],xyz[1])
  *     out[1] = -asin(xyz[2])
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 519, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 521, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 519, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 521, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 519, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 521, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_int_2);
   __Pyx_GIVEREF(__pyx_int_2);
@@ -9352,14 +9409,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 519, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 521, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 519, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 521, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -9368,30 +9425,30 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 519, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 521, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 519, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 521, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_GIVEREF(__pyx_t_2);
       PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_2);
       __pyx_t_2 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 519, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 521, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 519, __pyx_L1_error)
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 521, __pyx_L1_error)
   __pyx_v_out = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":520
+  /* "pycompass/SNE/pdf.pyx":522
  * def vec2TrendPlunge(double[:] xyz):
  *     cdef np.ndarray out = np.zeros([2])
  *     out[0] =  atan2(xyz[0],xyz[1])             # <<<<<<<<<<<<<<
@@ -9400,12 +9457,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  */
   __pyx_t_6 = 0;
   __pyx_t_7 = 1;
-  __pyx_t_1 = PyFloat_FromDouble(atan2((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_6 * __pyx_v_xyz.strides[0]) ))), (*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_7 * __pyx_v_xyz.strides[0]) ))))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 520, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(atan2((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_6 * __pyx_v_xyz.strides[0]) ))), (*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_7 * __pyx_v_xyz.strides[0]) ))))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 522, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 0, __pyx_t_1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 520, __pyx_L1_error)
+  if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 0, __pyx_t_1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 522, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":521
+  /* "pycompass/SNE/pdf.pyx":523
  *     cdef np.ndarray out = np.zeros([2])
  *     out[0] =  atan2(xyz[0],xyz[1])
  *     out[1] = -asin(xyz[2])             # <<<<<<<<<<<<<<
@@ -9413,27 +9470,27 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  *     #map to correct domain
  */
   __pyx_t_8 = 2;
-  __pyx_t_1 = PyFloat_FromDouble((-asin((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_8 * __pyx_v_xyz.strides[0]) )))))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 521, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble((-asin((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_8 * __pyx_v_xyz.strides[0]) )))))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 523, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 1, __pyx_t_1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 521, __pyx_L1_error)
+  if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 1, __pyx_t_1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 523, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":524
+  /* "pycompass/SNE/pdf.pyx":526
  * 
  *     #map to correct domain
  *     if (out[1] < 0):             # <<<<<<<<<<<<<<
  *         out[0] = atan2(-xyz[0],-xyz[1])
  *         out[1] = -asin(-xyz[2])
  */
-  __pyx_t_1 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 524, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 526, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyObject_RichCompare(__pyx_t_1, __pyx_int_0, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 524, __pyx_L1_error)
+  __pyx_t_3 = PyObject_RichCompare(__pyx_t_1, __pyx_int_0, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 526, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 524, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 526, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_9) {
 
-    /* "pycompass/SNE/pdf.pyx":525
+    /* "pycompass/SNE/pdf.pyx":527
  *     #map to correct domain
  *     if (out[1] < 0):
  *         out[0] = atan2(-xyz[0],-xyz[1])             # <<<<<<<<<<<<<<
@@ -9442,12 +9499,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  */
     __pyx_t_10 = 0;
     __pyx_t_11 = 1;
-    __pyx_t_3 = PyFloat_FromDouble(atan2((-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_10 * __pyx_v_xyz.strides[0]) )))), (-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_11 * __pyx_v_xyz.strides[0]) )))))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 525, __pyx_L1_error)
+    __pyx_t_3 = PyFloat_FromDouble(atan2((-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_10 * __pyx_v_xyz.strides[0]) )))), (-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_11 * __pyx_v_xyz.strides[0]) )))))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 527, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 0, __pyx_t_3, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 525, __pyx_L1_error)
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 0, __pyx_t_3, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 527, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":526
+    /* "pycompass/SNE/pdf.pyx":528
  *     if (out[1] < 0):
  *         out[0] = atan2(-xyz[0],-xyz[1])
  *         out[1] = -asin(-xyz[2])             # <<<<<<<<<<<<<<
@@ -9455,12 +9512,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  *         out[0] += 2 * np.pi
  */
     __pyx_t_12 = 2;
-    __pyx_t_3 = PyFloat_FromDouble((-asin((-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_12 * __pyx_v_xyz.strides[0]) ))))))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 526, __pyx_L1_error)
+    __pyx_t_3 = PyFloat_FromDouble((-asin((-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_12 * __pyx_v_xyz.strides[0]) ))))))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 528, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 1, __pyx_t_3, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 526, __pyx_L1_error)
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), 1, __pyx_t_3, long, 1, __Pyx_PyInt_From_long, 0, 0, 0) < 0)) __PYX_ERR(0, 528, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "pycompass/SNE/pdf.pyx":524
+    /* "pycompass/SNE/pdf.pyx":526
  * 
  *     #map to correct domain
  *     if (out[1] < 0):             # <<<<<<<<<<<<<<
@@ -9469,7 +9526,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  */
   }
 
-  /* "pycompass/SNE/pdf.pyx":527
+  /* "pycompass/SNE/pdf.pyx":529
  *         out[0] = atan2(-xyz[0],-xyz[1])
  *         out[1] = -asin(-xyz[2])
  *     while (out[0] < 0):             # <<<<<<<<<<<<<<
@@ -9477,15 +9534,15 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  * 
  */
   while (1) {
-    __pyx_t_3 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 527, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 529, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_1 = PyObject_RichCompare(__pyx_t_3, __pyx_int_0, Py_LT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 527, __pyx_L1_error)
+    __pyx_t_1 = PyObject_RichCompare(__pyx_t_3, __pyx_int_0, Py_LT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 529, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 527, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 529, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (!__pyx_t_9) break;
 
-    /* "pycompass/SNE/pdf.pyx":528
+    /* "pycompass/SNE/pdf.pyx":530
  *         out[1] = -asin(-xyz[2])
  *     while (out[0] < 0):
  *         out[0] += 2 * np.pi             # <<<<<<<<<<<<<<
@@ -9493,25 +9550,25 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
  *     return out
  */
     __pyx_t_13 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), __pyx_t_13, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 528, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(((PyObject *)__pyx_v_out), __pyx_t_13, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 528, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_pi); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 528, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_pi); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyNumber_Multiply(__pyx_int_2, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 528, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Multiply(__pyx_int_2, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 528, __pyx_L1_error)
+    __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), __pyx_t_13, __pyx_t_5, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0) < 0)) __PYX_ERR(0, 528, __pyx_L1_error)
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_out), __pyx_t_13, __pyx_t_5, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0) < 0)) __PYX_ERR(0, 530, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
 
-  /* "pycompass/SNE/pdf.pyx":530
+  /* "pycompass/SNE/pdf.pyx":532
  *         out[0] += 2 * np.pi
  * 
  *     return out             # <<<<<<<<<<<<<<
@@ -9523,7 +9580,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
   __pyx_r = ((PyObject *)__pyx_v_out);
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":518
+  /* "pycompass/SNE/pdf.pyx":520
  *  - plunge = the plunge of the vector (in radians)
  * """
  * def vec2TrendPlunge(double[:] xyz):             # <<<<<<<<<<<<<<
@@ -9548,7 +9605,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_24vec2TrendPlunge(CYTHON_UNUSED P
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":541
+/* "pycompass/SNE/pdf.pyx":543
  *  - lon = the longitude of the point defined by the intersection of this vector and the unit sphere
  * """
  * def vec2LL(double[:] xyz):             # <<<<<<<<<<<<<<
@@ -9565,7 +9622,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_27vec2LL(PyObject *__pyx_self, Py
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("vec2LL (wrapper)", 0);
   assert(__pyx_arg_xyz); {
-    __pyx_v_xyz = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_arg_xyz); if (unlikely(!__pyx_v_xyz.memview)) __PYX_ERR(0, 541, __pyx_L3_error)
+    __pyx_v_xyz = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_arg_xyz); if (unlikely(!__pyx_v_xyz.memview)) __PYX_ERR(0, 543, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9593,7 +9650,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
   PyObject *__pyx_t_7 = NULL;
   __Pyx_RefNannySetupContext("vec2LL", 0);
 
-  /* "pycompass/SNE/pdf.pyx":542
+  /* "pycompass/SNE/pdf.pyx":544
  * """
  * def vec2LL(double[:] xyz):
  *     cdef double lat = asin(-xyz[1])             # <<<<<<<<<<<<<<
@@ -9603,7 +9660,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
   __pyx_t_1 = 1;
   __pyx_v_lat = asin((-(*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_1 * __pyx_v_xyz.strides[0]) )))));
 
-  /* "pycompass/SNE/pdf.pyx":543
+  /* "pycompass/SNE/pdf.pyx":545
  * def vec2LL(double[:] xyz):
  *     cdef double lat = asin(-xyz[1])
  *     return np.array( [lat, asin(xyz[0]/cos(lat))] )             # <<<<<<<<<<<<<<
@@ -9611,17 +9668,17 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_lat); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_lat); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_5 = 0;
-  __pyx_t_6 = PyFloat_FromDouble(asin(((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_5 * __pyx_v_xyz.strides[0]) ))) / cos(__pyx_v_lat)))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __pyx_t_6 = PyFloat_FromDouble(asin(((*((double *) ( /* dim=0 */ (__pyx_v_xyz.data + __pyx_t_5 * __pyx_v_xyz.strides[0]) ))) / cos(__pyx_v_lat)))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_GIVEREF(__pyx_t_3);
   PyList_SET_ITEM(__pyx_t_7, 0, __pyx_t_3);
@@ -9640,14 +9697,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
     }
   }
   if (!__pyx_t_6) {
-    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_7); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 543, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_7); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 545, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_2);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_7};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 543, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 545, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -9656,20 +9713,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_7};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 543, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 545, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     } else
     #endif
     {
-      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 543, __pyx_L1_error)
+      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 545, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_6); __pyx_t_6 = NULL;
       __Pyx_GIVEREF(__pyx_t_7);
       PyTuple_SET_ITEM(__pyx_t_3, 0+1, __pyx_t_7);
       __pyx_t_7 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 543, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 545, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
@@ -9679,7 +9736,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":541
+  /* "pycompass/SNE/pdf.pyx":543
  *  - lon = the longitude of the point defined by the intersection of this vector and the unit sphere
  * """
  * def vec2LL(double[:] xyz):             # <<<<<<<<<<<<<<
@@ -9703,7 +9760,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_26vec2LL(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":553
+/* "pycompass/SNE/pdf.pyx":555
  * -xyz = a numpy array represeting the vector.
  * """
  * def trendPlunge2Vec(double trend, double plunge):             # <<<<<<<<<<<<<<
@@ -9743,11 +9800,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_29trendPlunge2Vec(PyObject *__pyx
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_plunge)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("trendPlunge2Vec", 1, 2, 2, 1); __PYX_ERR(0, 553, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("trendPlunge2Vec", 1, 2, 2, 1); __PYX_ERR(0, 555, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "trendPlunge2Vec") < 0)) __PYX_ERR(0, 553, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "trendPlunge2Vec") < 0)) __PYX_ERR(0, 555, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -9755,12 +9812,12 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_29trendPlunge2Vec(PyObject *__pyx
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_trend = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_trend == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 553, __pyx_L3_error)
-    __pyx_v_plunge = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_plunge == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 553, __pyx_L3_error)
+    __pyx_v_trend = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_trend == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 555, __pyx_L3_error)
+    __pyx_v_plunge = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_plunge == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 555, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("trendPlunge2Vec", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 553, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("trendPlunge2Vec", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 555, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.trendPlunge2Vec", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9784,7 +9841,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("trendPlunge2Vec", 0);
 
-  /* "pycompass/SNE/pdf.pyx":554
+  /* "pycompass/SNE/pdf.pyx":556
  * """
  * def trendPlunge2Vec(double trend, double plunge):
  *     return np.array( [sin(trend) * cos(plunge),             # <<<<<<<<<<<<<<
@@ -9792,42 +9849,42 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
  *                       -sin(plunge)])
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 554, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 556, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 554, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 556, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyFloat_FromDouble((sin(__pyx_v_trend) * cos(__pyx_v_plunge))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 554, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble((sin(__pyx_v_trend) * cos(__pyx_v_plunge))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 556, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "pycompass/SNE/pdf.pyx":555
+  /* "pycompass/SNE/pdf.pyx":557
  * def trendPlunge2Vec(double trend, double plunge):
  *     return np.array( [sin(trend) * cos(plunge),
  *                       cos(trend) * cos(plunge),             # <<<<<<<<<<<<<<
  *                       -sin(plunge)])
  * 
  */
-  __pyx_t_4 = PyFloat_FromDouble((cos(__pyx_v_trend) * cos(__pyx_v_plunge))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 555, __pyx_L1_error)
+  __pyx_t_4 = PyFloat_FromDouble((cos(__pyx_v_trend) * cos(__pyx_v_plunge))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 557, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
 
-  /* "pycompass/SNE/pdf.pyx":556
+  /* "pycompass/SNE/pdf.pyx":558
  *     return np.array( [sin(trend) * cos(plunge),
  *                       cos(trend) * cos(plunge),
  *                       -sin(plunge)])             # <<<<<<<<<<<<<<
  * 
  * """
  */
-  __pyx_t_5 = PyFloat_FromDouble((-sin(__pyx_v_plunge))); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 556, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble((-sin(__pyx_v_plunge))); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 558, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "pycompass/SNE/pdf.pyx":554
+  /* "pycompass/SNE/pdf.pyx":556
  * """
  * def trendPlunge2Vec(double trend, double plunge):
  *     return np.array( [sin(trend) * cos(plunge),             # <<<<<<<<<<<<<<
  *                       cos(trend) * cos(plunge),
  *                       -sin(plunge)])
  */
-  __pyx_t_6 = PyList_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 554, __pyx_L1_error)
+  __pyx_t_6 = PyList_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 556, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
@@ -9849,14 +9906,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
     }
   }
   if (!__pyx_t_5) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 554, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 556, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_6};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 554, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 556, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -9865,20 +9922,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_t_6};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 554, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 556, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else
     #endif
     {
-      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 554, __pyx_L1_error)
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 556, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_5); __pyx_t_5 = NULL;
       __Pyx_GIVEREF(__pyx_t_6);
       PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_t_6);
       __pyx_t_6 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 554, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 556, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
@@ -9888,7 +9945,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":553
+  /* "pycompass/SNE/pdf.pyx":555
  * -xyz = a numpy array represeting the vector.
  * """
  * def trendPlunge2Vec(double trend, double plunge):             # <<<<<<<<<<<<<<
@@ -9912,7 +9969,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_28trendPlunge2Vec(CYTHON_UNUSED P
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":567
+/* "pycompass/SNE/pdf.pyx":569
  *    -lon = the longitude of the position on the unit sphere intersected by this direction
  * """
  * def trendPlunge2LL(double trend, double plunge):             # <<<<<<<<<<<<<<
@@ -9952,11 +10009,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_31trendPlunge2LL(PyObject *__pyx_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_plunge)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("trendPlunge2LL", 1, 2, 2, 1); __PYX_ERR(0, 567, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("trendPlunge2LL", 1, 2, 2, 1); __PYX_ERR(0, 569, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "trendPlunge2LL") < 0)) __PYX_ERR(0, 567, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "trendPlunge2LL") < 0)) __PYX_ERR(0, 569, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -9964,12 +10021,12 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_31trendPlunge2LL(PyObject *__pyx_
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_trend = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_trend == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 567, __pyx_L3_error)
-    __pyx_v_plunge = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_plunge == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 567, __pyx_L3_error)
+    __pyx_v_trend = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_trend == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 569, __pyx_L3_error)
+    __pyx_v_plunge = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_plunge == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 569, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("trendPlunge2LL", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 567, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("trendPlunge2LL", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 569, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.trendPlunge2LL", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9996,7 +10053,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   PyObject *__pyx_t_9 = NULL;
   __Pyx_RefNannySetupContext("trendPlunge2LL", 0);
 
-  /* "pycompass/SNE/pdf.pyx":568
+  /* "pycompass/SNE/pdf.pyx":570
  * """
  * def trendPlunge2LL(double trend, double plunge):
  *     return vec2LL( trendPlunge2Vec(trend,plunge) )             # <<<<<<<<<<<<<<
@@ -10004,13 +10061,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2LL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 568, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2LL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 570, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_trendPlunge2Vec); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 568, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_trendPlunge2Vec); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 570, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_trend); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 568, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_trend); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 570, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = PyFloat_FromDouble(__pyx_v_plunge); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 568, __pyx_L1_error)
+  __pyx_t_6 = PyFloat_FromDouble(__pyx_v_plunge); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 570, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __pyx_t_7 = NULL;
   __pyx_t_8 = 0;
@@ -10027,7 +10084,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_6};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 570, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10037,7 +10094,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_6};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 570, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10045,7 +10102,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   } else
   #endif
   {
-    __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 570, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     if (__pyx_t_7) {
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -10056,7 +10113,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
     PyTuple_SET_ITEM(__pyx_t_9, 1+__pyx_t_8, __pyx_t_6);
     __pyx_t_5 = 0;
     __pyx_t_6 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 570, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   }
@@ -10072,14 +10129,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 570, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 568, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 570, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -10088,20 +10145,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 568, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 570, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 568, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 570, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 568, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 570, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
@@ -10111,7 +10168,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":567
+  /* "pycompass/SNE/pdf.pyx":569
  *    -lon = the longitude of the position on the unit sphere intersected by this direction
  * """
  * def trendPlunge2LL(double trend, double plunge):             # <<<<<<<<<<<<<<
@@ -10137,7 +10194,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_30trendPlunge2LL(CYTHON_UNUSED Py
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":578
+/* "pycompass/SNE/pdf.pyx":580
  *  -plunge = the plunge of the vector
  * """
  * def llToTrendPlunge(double lat, double lon):             # <<<<<<<<<<<<<<
@@ -10177,11 +10234,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_33llToTrendPlunge(PyObject *__pyx
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_lon)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("llToTrendPlunge", 1, 2, 2, 1); __PYX_ERR(0, 578, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("llToTrendPlunge", 1, 2, 2, 1); __PYX_ERR(0, 580, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "llToTrendPlunge") < 0)) __PYX_ERR(0, 578, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "llToTrendPlunge") < 0)) __PYX_ERR(0, 580, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -10189,12 +10246,12 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_33llToTrendPlunge(PyObject *__pyx
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_lat = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_lat == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 578, __pyx_L3_error)
-    __pyx_v_lon = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_lon == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 578, __pyx_L3_error)
+    __pyx_v_lat = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_lat == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 580, __pyx_L3_error)
+    __pyx_v_lon = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_lon == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 580, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("llToTrendPlunge", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 578, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("llToTrendPlunge", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 580, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.llToTrendPlunge", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -10221,7 +10278,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   PyObject *__pyx_t_9 = NULL;
   __Pyx_RefNannySetupContext("llToTrendPlunge", 0);
 
-  /* "pycompass/SNE/pdf.pyx":579
+  /* "pycompass/SNE/pdf.pyx":581
  * """
  * def llToTrendPlunge(double lat, double lon):
  *     return vec2TrendPlunge(llToVec(lat,lon))             # <<<<<<<<<<<<<<
@@ -10229,13 +10286,13 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
  * """
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2TrendPlunge); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 579, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_vec2TrendPlunge); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 581, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_llToVec); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 579, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_llToVec); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 581, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_lat); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 579, __pyx_L1_error)
+  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_lat); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 581, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = PyFloat_FromDouble(__pyx_v_lon); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 579, __pyx_L1_error)
+  __pyx_t_6 = PyFloat_FromDouble(__pyx_v_lon); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 581, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __pyx_t_7 = NULL;
   __pyx_t_8 = 0;
@@ -10252,7 +10309,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_6};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 579, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 581, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10262,7 +10319,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_6};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 579, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 581, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10270,7 +10327,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   } else
   #endif
   {
-    __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 579, __pyx_L1_error)
+    __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 581, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     if (__pyx_t_7) {
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -10281,7 +10338,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
     PyTuple_SET_ITEM(__pyx_t_9, 1+__pyx_t_8, __pyx_t_6);
     __pyx_t_5 = 0;
     __pyx_t_6 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 579, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 581, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   }
@@ -10297,14 +10354,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
     }
   }
   if (!__pyx_t_4) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 579, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 581, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 579, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 581, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -10313,20 +10370,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
       PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 579, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 581, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 579, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 581, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4); __pyx_t_4 = NULL;
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 579, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 581, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
@@ -10336,7 +10393,7 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":578
+  /* "pycompass/SNE/pdf.pyx":580
  *  -plunge = the plunge of the vector
  * """
  * def llToTrendPlunge(double lat, double lon):             # <<<<<<<<<<<<<<
@@ -10362,12 +10419,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_32llToTrendPlunge(CYTHON_UNUSED P
   return __pyx_r;
 }
 
-/* "pycompass/SNE/pdf.pyx":588
+/* "pycompass/SNE/pdf.pyx":590
  * -xyz = a numpy array represeting the normal vector.
  * """
  * def llToVec(lat,lon):             # <<<<<<<<<<<<<<
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),
+ *                       sin(lat),
  */
 
 /* Python wrapper */
@@ -10402,11 +10459,11 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_35llToVec(PyObject *__pyx_self, P
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_lon)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("llToVec", 1, 2, 2, 1); __PYX_ERR(0, 588, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("llToVec", 1, 2, 2, 1); __PYX_ERR(0, 590, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "llToVec") < 0)) __PYX_ERR(0, 588, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "llToVec") < 0)) __PYX_ERR(0, 590, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -10419,7 +10476,7 @@ static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_35llToVec(PyObject *__pyx_self, P
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("llToVec", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 588, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("llToVec", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 590, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pycompass.SNE.pdf.llToVec", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -10445,52 +10502,55 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject 
   PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("llToVec", 0);
 
-  /* "pycompass/SNE/pdf.pyx":589
+  /* "pycompass/SNE/pdf.pyx":591
  * """
  * def llToVec(lat,lon):
  *     return np.array( [cos(lat) * sin(lon),             # <<<<<<<<<<<<<<
- *                       -sin(lat),
+ *                       sin(lat),
  *                       -cos(lat) * cos(lon)])
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 589, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 589, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 589, __pyx_L1_error)
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lon); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 589, __pyx_L1_error)
-  __pyx_t_2 = PyFloat_FromDouble((cos(__pyx_t_4) * sin(__pyx_t_5))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 589, __pyx_L1_error)
+  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 591, __pyx_L1_error)
+  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lon); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 591, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble((cos(__pyx_t_4) * sin(__pyx_t_5))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "pycompass/SNE/pdf.pyx":590
+  /* "pycompass/SNE/pdf.pyx":592
  * def llToVec(lat,lon):
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),             # <<<<<<<<<<<<<<
+ *                       sin(lat),             # <<<<<<<<<<<<<<
  *                       -cos(lat) * cos(lon)])
+ * 
  */
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 590, __pyx_L1_error)
-  __pyx_t_6 = PyFloat_FromDouble((-sin(__pyx_t_5))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 590, __pyx_L1_error)
+  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 592, __pyx_L1_error)
+  __pyx_t_6 = PyFloat_FromDouble(sin(__pyx_t_5)); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 592, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
 
-  /* "pycompass/SNE/pdf.pyx":591
+  /* "pycompass/SNE/pdf.pyx":593
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),
+ *                       sin(lat),
  *                       -cos(lat) * cos(lon)])             # <<<<<<<<<<<<<<
+ * 
+ * 
  */
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 591, __pyx_L1_error)
-  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_v_lon); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 591, __pyx_L1_error)
-  __pyx_t_7 = PyFloat_FromDouble(((-cos(__pyx_t_5)) * cos(__pyx_t_4))); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 591, __pyx_L1_error)
+  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_lat); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 593, __pyx_L1_error)
+  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_v_lon); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 593, __pyx_L1_error)
+  __pyx_t_7 = PyFloat_FromDouble(((-cos(__pyx_t_5)) * cos(__pyx_t_4))); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 593, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
 
-  /* "pycompass/SNE/pdf.pyx":589
+  /* "pycompass/SNE/pdf.pyx":591
  * """
  * def llToVec(lat,lon):
  *     return np.array( [cos(lat) * sin(lon),             # <<<<<<<<<<<<<<
- *                       -sin(lat),
+ *                       sin(lat),
  *                       -cos(lat) * cos(lon)])
  */
-  __pyx_t_8 = PyList_New(3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 589, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_8, 0, __pyx_t_2);
@@ -10512,14 +10572,14 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject 
     }
   }
   if (!__pyx_t_7) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 589, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 591, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_8};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 589, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 591, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -10528,20 +10588,20 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
       PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_8};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 589, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 591, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     } else
     #endif
     {
-      __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 589, __pyx_L1_error)
+      __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 591, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_7); __pyx_t_7 = NULL;
       __Pyx_GIVEREF(__pyx_t_8);
       PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_8);
       __pyx_t_8 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 589, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 591, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
@@ -10551,12 +10611,12 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject 
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pycompass/SNE/pdf.pyx":588
+  /* "pycompass/SNE/pdf.pyx":590
  * -xyz = a numpy array represeting the normal vector.
  * """
  * def llToVec(lat,lon):             # <<<<<<<<<<<<<<
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),
+ *                       sin(lat),
  */
 
   /* function exit code */
@@ -10570,6 +10630,1736 @@ static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_34llToVec(CYTHON_UNUSED PyObject 
   __Pyx_AddTraceback("pycompass.SNE.pdf.llToVec", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pycompass/SNE/pdf.pyx":599
+ * Fast part of the code for the function below
+ * """
+ * cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] data, double[:] kernel, double[:] acos, double lookupRes):             # <<<<<<<<<<<<<<
+ *     #loop through grid points
+ *     cdef double dot, alpha
+ */
+
+static __Pyx_memviewslice __pyx_f_9pycompass_3SNE_3pdf_fillKDE(int __pyx_v_npoints, int __pyx_v_ndata, __Pyx_memviewslice __pyx_v_grid, __Pyx_memviewslice __pyx_v_data, __Pyx_memviewslice __pyx_v_kernel, __Pyx_memviewslice __pyx_v_acos, double __pyx_v_lookupRes) {
+  double __pyx_v_dot;
+  double __pyx_v_alpha;
+  double __pyx_v_hpi;
+  double __pyx_v_nf;
+  __Pyx_memviewslice __pyx_v_out = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_v__g;
+  int __pyx_v__d;
+  CYTHON_UNUSED PyObject *__pyx_v_gx = NULL;
+  CYTHON_UNUSED PyObject *__pyx_v_gy = NULL;
+  CYTHON_UNUSED PyObject *__pyx_v_gz = NULL;
+  __Pyx_memviewslice __pyx_r = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  __Pyx_memviewslice __pyx_t_6 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_7;
+  int __pyx_t_8;
+  Py_ssize_t __pyx_t_9;
+  Py_ssize_t __pyx_t_10;
+  Py_ssize_t __pyx_t_11;
+  Py_ssize_t __pyx_t_12;
+  Py_ssize_t __pyx_t_13;
+  Py_ssize_t __pyx_t_14;
+  int __pyx_t_15;
+  int __pyx_t_16;
+  Py_ssize_t __pyx_t_17;
+  Py_ssize_t __pyx_t_18;
+  Py_ssize_t __pyx_t_19;
+  Py_ssize_t __pyx_t_20;
+  Py_ssize_t __pyx_t_21;
+  Py_ssize_t __pyx_t_22;
+  Py_ssize_t __pyx_t_23;
+  Py_ssize_t __pyx_t_24;
+  Py_ssize_t __pyx_t_25;
+  Py_ssize_t __pyx_t_26;
+  Py_ssize_t __pyx_t_27;
+  Py_ssize_t __pyx_t_28;
+  Py_ssize_t __pyx_t_29;
+  Py_ssize_t __pyx_t_30;
+  Py_ssize_t __pyx_t_31;
+  __Pyx_RefNannySetupContext("fillKDE", 0);
+
+  /* "pycompass/SNE/pdf.pyx":602
+ *     #loop through grid points
+ *     cdef double dot, alpha
+ *     cdef double hpi = pi / 2 #half-pi             # <<<<<<<<<<<<<<
+ *     cdef double nf = 1.0 / ndata #normalising factor for each kernel
+ *     cdef double[:] out = np.zeros(npoints)
+ */
+  __pyx_v_hpi = (__pyx_v_9pycompass_3SNE_3pdf_pi / 2.0);
+
+  /* "pycompass/SNE/pdf.pyx":603
+ *     cdef double dot, alpha
+ *     cdef double hpi = pi / 2 #half-pi
+ *     cdef double nf = 1.0 / ndata #normalising factor for each kernel             # <<<<<<<<<<<<<<
+ *     cdef double[:] out = np.zeros(npoints)
+ *     cdef int _g, _d
+ */
+  __pyx_v_nf = (1.0 / __pyx_v_ndata);
+
+  /* "pycompass/SNE/pdf.pyx":604
+ *     cdef double hpi = pi / 2 #half-pi
+ *     cdef double nf = 1.0 / ndata #normalising factor for each kernel
+ *     cdef double[:] out = np.zeros(npoints)             # <<<<<<<<<<<<<<
+ *     cdef int _g, _d
+ *     for _g in range(npoints):
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 604, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 604, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_npoints); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 604, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_4)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_4);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+    }
+  }
+  if (!__pyx_t_4) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 604, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 604, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 604, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    {
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 604, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
+      __Pyx_GIVEREF(__pyx_t_2);
+      PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_2);
+      __pyx_t_2 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 604, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+  if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 604, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_out = __pyx_t_6;
+  __pyx_t_6.memview = NULL;
+  __pyx_t_6.data = NULL;
+
+  /* "pycompass/SNE/pdf.pyx":606
+ *     cdef double[:] out = np.zeros(npoints)
+ *     cdef int _g, _d
+ *     for _g in range(npoints):             # <<<<<<<<<<<<<<
+ *         gx = grid[_g,0]
+ *         gy = grid[_g,1]
+ */
+  __pyx_t_7 = __pyx_v_npoints;
+  for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
+    __pyx_v__g = __pyx_t_8;
+
+    /* "pycompass/SNE/pdf.pyx":607
+ *     cdef int _g, _d
+ *     for _g in range(npoints):
+ *         gx = grid[_g,0]             # <<<<<<<<<<<<<<
+ *         gy = grid[_g,1]
+ *         gz = grid[_g,2]
+ */
+    __pyx_t_9 = __pyx_v__g;
+    __pyx_t_10 = 0;
+    __pyx_t_1 = PyFloat_FromDouble((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_9 * __pyx_v_grid.strides[0]) ) + __pyx_t_10 * __pyx_v_grid.strides[1]) )))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 607, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_XDECREF_SET(__pyx_v_gx, __pyx_t_1);
+    __pyx_t_1 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":608
+ *     for _g in range(npoints):
+ *         gx = grid[_g,0]
+ *         gy = grid[_g,1]             # <<<<<<<<<<<<<<
+ *         gz = grid[_g,2]
+ * 
+ */
+    __pyx_t_11 = __pyx_v__g;
+    __pyx_t_12 = 1;
+    __pyx_t_1 = PyFloat_FromDouble((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_11 * __pyx_v_grid.strides[0]) ) + __pyx_t_12 * __pyx_v_grid.strides[1]) )))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 608, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_XDECREF_SET(__pyx_v_gy, __pyx_t_1);
+    __pyx_t_1 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":609
+ *         gx = grid[_g,0]
+ *         gy = grid[_g,1]
+ *         gz = grid[_g,2]             # <<<<<<<<<<<<<<
+ * 
+ *         for _d in range(ndata):
+ */
+    __pyx_t_13 = __pyx_v__g;
+    __pyx_t_14 = 2;
+    __pyx_t_1 = PyFloat_FromDouble((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_13 * __pyx_v_grid.strides[0]) ) + __pyx_t_14 * __pyx_v_grid.strides[1]) )))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 609, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_XDECREF_SET(__pyx_v_gz, __pyx_t_1);
+    __pyx_t_1 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":611
+ *         gz = grid[_g,2]
+ * 
+ *         for _d in range(ndata):             # <<<<<<<<<<<<<<
+ *             #compute dot product
+ *             dot = abs(grid[_g,0]*data[_d,0] + grid[_g,1]*data[_d,1] + grid[_g,2]*data[_d,2])
+ */
+    __pyx_t_15 = __pyx_v_ndata;
+    for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_15; __pyx_t_16+=1) {
+      __pyx_v__d = __pyx_t_16;
+
+      /* "pycompass/SNE/pdf.pyx":613
+ *         for _d in range(ndata):
+ *             #compute dot product
+ *             dot = abs(grid[_g,0]*data[_d,0] + grid[_g,1]*data[_d,1] + grid[_g,2]*data[_d,2])             # <<<<<<<<<<<<<<
+ * 
+ *             #lookup corresponding alpha in lookup table
+ */
+      __pyx_t_17 = __pyx_v__g;
+      __pyx_t_18 = 0;
+      __pyx_t_19 = __pyx_v__d;
+      __pyx_t_20 = 0;
+      __pyx_t_21 = __pyx_v__g;
+      __pyx_t_22 = 1;
+      __pyx_t_23 = __pyx_v__d;
+      __pyx_t_24 = 1;
+      __pyx_t_25 = __pyx_v__g;
+      __pyx_t_26 = 2;
+      __pyx_t_27 = __pyx_v__d;
+      __pyx_t_28 = 2;
+      __pyx_v_dot = fabs(((((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_17 * __pyx_v_grid.strides[0]) ) + __pyx_t_18 * __pyx_v_grid.strides[1]) ))) * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_data.data + __pyx_t_19 * __pyx_v_data.strides[0]) ) + __pyx_t_20 * __pyx_v_data.strides[1]) )))) + ((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_21 * __pyx_v_grid.strides[0]) ) + __pyx_t_22 * __pyx_v_grid.strides[1]) ))) * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_data.data + __pyx_t_23 * __pyx_v_data.strides[0]) ) + __pyx_t_24 * __pyx_v_data.strides[1]) ))))) + ((*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_grid.data + __pyx_t_25 * __pyx_v_grid.strides[0]) ) + __pyx_t_26 * __pyx_v_grid.strides[1]) ))) * (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_data.data + __pyx_t_27 * __pyx_v_data.strides[0]) ) + __pyx_t_28 * __pyx_v_data.strides[1]) ))))));
+
+      /* "pycompass/SNE/pdf.pyx":616
+ * 
+ *             #lookup corresponding alpha in lookup table
+ *             alpha = acos[int(dot*lookupRes)]             # <<<<<<<<<<<<<<
+ * 
+ *             #accumulate relevant kernel value
+ */
+      __pyx_t_29 = ((Py_ssize_t)(__pyx_v_dot * __pyx_v_lookupRes));
+      __pyx_v_alpha = (*((double *) ( /* dim=0 */ (__pyx_v_acos.data + __pyx_t_29 * __pyx_v_acos.strides[0]) )));
+
+      /* "pycompass/SNE/pdf.pyx":619
+ * 
+ *             #accumulate relevant kernel value
+ *             out[_g] += nf*kernel[int(lookupRes*alpha/hpi)]             # <<<<<<<<<<<<<<
+ *     return out
+ * 
+ */
+      __pyx_t_30 = ((Py_ssize_t)((__pyx_v_lookupRes * __pyx_v_alpha) / __pyx_v_hpi));
+      __pyx_t_31 = __pyx_v__g;
+      *((double *) ( /* dim=0 */ (__pyx_v_out.data + __pyx_t_31 * __pyx_v_out.strides[0]) )) += (__pyx_v_nf * (*((double *) ( /* dim=0 */ (__pyx_v_kernel.data + __pyx_t_30 * __pyx_v_kernel.strides[0]) ))));
+    }
+  }
+
+  /* "pycompass/SNE/pdf.pyx":620
+ *             #accumulate relevant kernel value
+ *             out[_g] += nf*kernel[int(lookupRes*alpha/hpi)]
+ *     return out             # <<<<<<<<<<<<<<
+ * 
+ * """
+ */
+  __PYX_INC_MEMVIEW(&__pyx_v_out, 0);
+  __pyx_r = __pyx_v_out;
+  goto __pyx_L0;
+
+  /* "pycompass/SNE/pdf.pyx":599
+ * Fast part of the code for the function below
+ * """
+ * cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] data, double[:] kernel, double[:] acos, double lookupRes):             # <<<<<<<<<<<<<<
+ *     #loop through grid points
+ *     cdef double dot, alpha
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_6, 1);
+  __pyx_r.data = NULL;
+  __pyx_r.memview = NULL;
+  __Pyx_AddTraceback("pycompass.SNE.pdf.fillKDE", __pyx_clineno, __pyx_lineno, __pyx_filename);
+
+  goto __pyx_L2;
+  __pyx_L0:;
+  if (unlikely(!__pyx_r.memview)) {
+    PyErr_SetString(PyExc_TypeError, "Memoryview return value is not initialized");
+  }
+  __pyx_L2:;
+  __PYX_XDEC_MEMVIEW(&__pyx_v_out, 1);
+  __Pyx_XDECREF(__pyx_v_gx);
+  __Pyx_XDECREF(__pyx_v_gy);
+  __Pyx_XDECREF(__pyx_v_gz);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pycompass/SNE/pdf.pyx":634
+ *  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees).
+ * """
+ * def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):             # <<<<<<<<<<<<<<
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_37sphericalKDE(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_9pycompass_3SNE_3pdf_37sphericalKDE = {"sphericalKDE", (PyCFunction)__pyx_pw_9pycompass_3SNE_3pdf_37sphericalKDE, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_9pycompass_3SNE_3pdf_37sphericalKDE(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyArrayObject *__pyx_v_grid = 0;
+  PyArrayObject *__pyx_v_data = 0;
+  double __pyx_v_bandwidth;
+  PyObject *__pyx_v_kwds = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("sphericalKDE (wrapper)", 0);
+  __pyx_v_kwds = PyDict_New(); if (unlikely(!__pyx_v_kwds)) return NULL;
+  __Pyx_GOTREF(__pyx_v_kwds);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_grid,&__pyx_n_s_data,&__pyx_n_s_bandwidth,0};
+    PyObject* values[3] = {0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_grid)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_data)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("sphericalKDE", 1, 3, 3, 1); __PYX_ERR(0, 634, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_bandwidth)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("sphericalKDE", 1, 3, 3, 2); __PYX_ERR(0, 634, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, __pyx_v_kwds, values, pos_args, "sphericalKDE") < 0)) __PYX_ERR(0, 634, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+    }
+    __pyx_v_grid = ((PyArrayObject *)values[0]);
+    __pyx_v_data = ((PyArrayObject *)values[1]);
+    __pyx_v_bandwidth = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_bandwidth == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 634, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("sphericalKDE", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 634, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_DECREF(__pyx_v_kwds); __pyx_v_kwds = 0;
+  __Pyx_AddTraceback("pycompass.SNE.pdf.sphericalKDE", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grid), __pyx_ptype_5numpy_ndarray, 1, "grid", 0))) __PYX_ERR(0, 634, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_data), __pyx_ptype_5numpy_ndarray, 1, "data", 0))) __PYX_ERR(0, 634, __pyx_L1_error)
+  __pyx_r = __pyx_pf_9pycompass_3SNE_3pdf_36sphericalKDE(__pyx_self, __pyx_v_grid, __pyx_v_data, __pyx_v_bandwidth, __pyx_v_kwds);
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_kwds);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_9pycompass_3SNE_3pdf_36sphericalKDE(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_grid, PyArrayObject *__pyx_v_data, double __pyx_v_bandwidth, PyObject *__pyx_v_kwds) {
+  PyObject *__pyx_v_lookupRes = NULL;
+  PyObject *__pyx_v__x = NULL;
+  __Pyx_memviewslice __pyx_v__N = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v__acos = { 0, 0, { 0 }, { 0 }, { 0 } };
+  PyObject *__pyx_v_gxyz = NULL;
+  PyObject *__pyx_v__lat = NULL;
+  PyObject *__pyx_v__lon = NULL;
+  PyObject *__pyx_v_dxyz = NULL;
+  PyObject *__pyx_v__t = NULL;
+  PyObject *__pyx_v__p = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  int __pyx_t_6;
+  PyObject *__pyx_t_7 = NULL;
+  int __pyx_t_8;
+  double __pyx_t_9;
+  __Pyx_memviewslice __pyx_t_10 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  Py_ssize_t __pyx_t_11;
+  PyObject *(*__pyx_t_12)(PyObject *);
+  PyObject *(*__pyx_t_13)(PyObject *);
+  int __pyx_t_14;
+  PyObject *__pyx_t_15 = NULL;
+  PyObject *__pyx_t_16 = NULL;
+  int __pyx_t_17;
+  __Pyx_memviewslice __pyx_t_18 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_19 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_RefNannySetupContext("sphericalKDE", 0);
+
+  /* "pycompass/SNE/pdf.pyx":636
+ * def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)             # <<<<<<<<<<<<<<
+ *     _x = np.linspace(0,np.pi/2,lookupRes+1)
+ *     if kwds.get("degrees",True):
+ */
+  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_kwds, __pyx_n_s_lookupRes, __pyx_int_1000); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 636, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_lookupRes = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":637
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)
+ *     _x = np.linspace(0,np.pi/2,lookupRes+1)             # <<<<<<<<<<<<<<
+ *     if kwds.get("degrees",True):
+ *         bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_linspace); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_pi); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyNumber_Divide(__pyx_t_4, __pyx_int_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_v_lookupRes, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 637, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = NULL;
+  __pyx_t_6 = 0;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+      __pyx_t_6 = 1;
+    }
+  }
+  #if CYTHON_FAST_PYCALL
+  if (PyFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_int_0, __pyx_t_2, __pyx_t_4};
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  } else
+  #endif
+  #if CYTHON_FAST_PYCCALL
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_int_0, __pyx_t_2, __pyx_t_4};
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  } else
+  #endif
+  {
+    __pyx_t_7 = PyTuple_New(3+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    if (__pyx_t_5) {
+      __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
+    }
+    __Pyx_INCREF(__pyx_int_0);
+    __Pyx_GIVEREF(__pyx_int_0);
+    PyTuple_SET_ITEM(__pyx_t_7, 0+__pyx_t_6, __pyx_int_0);
+    __Pyx_GIVEREF(__pyx_t_2);
+    PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_2);
+    __Pyx_GIVEREF(__pyx_t_4);
+    PyTuple_SET_ITEM(__pyx_t_7, 2+__pyx_t_6, __pyx_t_4);
+    __pyx_t_2 = 0;
+    __pyx_t_4 = 0;
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_v__x = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":638
+ *     lookupRes = kwds.get("lookupRes",1000)
+ *     _x = np.linspace(0,np.pi/2,lookupRes+1)
+ *     if kwds.get("degrees",True):             # <<<<<<<<<<<<<<
+ *         bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+ *     cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
+ */
+  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_kwds, __pyx_n_s_degrees, Py_True); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 638, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 638, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (__pyx_t_8) {
+
+    /* "pycompass/SNE/pdf.pyx":639
+ *     _x = np.linspace(0,np.pi/2,lookupRes+1)
+ *     if kwds.get("degrees",True):
+ *         bandwidth=np.deg2rad(bandwidth) #lookup table is in radians             # <<<<<<<<<<<<<<
+ *     cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
+ * 
+ */
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_deg2rad); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_bandwidth); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = NULL;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_7);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_7, function);
+      }
+    }
+    if (!__pyx_t_4) {
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 639, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else {
+      #if CYTHON_FAST_PYCALL
+      if (PyFunction_Check(__pyx_t_7)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
+        __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 639, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      } else
+      #endif
+      #if CYTHON_FAST_PYCCALL
+      if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_3};
+        __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 639, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      } else
+      #endif
+      {
+        __pyx_t_2 = PyTuple_New(1+1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 639, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_4); __pyx_t_4 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_2, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 639, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      }
+    }
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_v_bandwidth = __pyx_t_9;
+
+    /* "pycompass/SNE/pdf.pyx":638
+ *     lookupRes = kwds.get("lookupRes",1000)
+ *     _x = np.linspace(0,np.pi/2,lookupRes+1)
+ *     if kwds.get("degrees",True):             # <<<<<<<<<<<<<<
+ *         bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+ *     cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
+ */
+  }
+
+  /* "pycompass/SNE/pdf.pyx":640
+ *     if kwds.get("degrees",True):
+ *         bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+ *     cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)             # <<<<<<<<<<<<<<
+ * 
+ *     #create arccosine lookup table
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_stats); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_norm); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_bandwidth); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = NULL;
+  __pyx_t_6 = 0;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_4)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_4);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+      __pyx_t_6 = 1;
+    }
+  }
+  #if CYTHON_FAST_PYCALL
+  if (PyFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_int_0, __pyx_t_2};
+    __pyx_t_7 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  } else
+  #endif
+  #if CYTHON_FAST_PYCCALL
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_int_0, __pyx_t_2};
+    __pyx_t_7 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  } else
+  #endif
+  {
+    __pyx_t_5 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    if (__pyx_t_4) {
+      __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
+    }
+    __Pyx_INCREF(__pyx_int_0);
+    __Pyx_GIVEREF(__pyx_int_0);
+    PyTuple_SET_ITEM(__pyx_t_5, 0+__pyx_t_6, __pyx_int_0);
+    __Pyx_GIVEREF(__pyx_t_2);
+    PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_6, __pyx_t_2);
+    __pyx_t_2 = 0;
+    __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_pdf); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_7)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_7);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+    }
+  }
+  if (!__pyx_t_7) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v__x); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v__x};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 640, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v__x};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 640, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 640, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_7); __pyx_t_7 = NULL;
+      __Pyx_INCREF(__pyx_v__x);
+      __Pyx_GIVEREF(__pyx_v__x);
+      PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v__x);
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 640, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+  if (unlikely(!__pyx_t_10.memview)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v__N = __pyx_t_10;
+  __pyx_t_10.memview = NULL;
+  __pyx_t_10.data = NULL;
+
+  /* "pycompass/SNE/pdf.pyx":643
+ * 
+ *     #create arccosine lookup table
+ *     _x = np.linspace(0,1,lookupRes+1)             # <<<<<<<<<<<<<<
+ *     cdef double[:] _acos = np.arccos(_x)
+ * 
+ */
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 643, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_linspace); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 643, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_v_lookupRes, __pyx_int_1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 643, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_7 = NULL;
+  __pyx_t_6 = 0;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
+    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_5);
+    if (likely(__pyx_t_7)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+      __Pyx_INCREF(__pyx_t_7);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_5, function);
+      __pyx_t_6 = 1;
+    }
+  }
+  #if CYTHON_FAST_PYCALL
+  if (PyFunction_Check(__pyx_t_5)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_int_0, __pyx_int_1, __pyx_t_3};
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  } else
+  #endif
+  #if CYTHON_FAST_PYCCALL
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_int_0, __pyx_int_1, __pyx_t_3};
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_6, 3+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  } else
+  #endif
+  {
+    __pyx_t_2 = PyTuple_New(3+__pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    if (__pyx_t_7) {
+      __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_7); __pyx_t_7 = NULL;
+    }
+    __Pyx_INCREF(__pyx_int_0);
+    __Pyx_GIVEREF(__pyx_int_0);
+    PyTuple_SET_ITEM(__pyx_t_2, 0+__pyx_t_6, __pyx_int_0);
+    __Pyx_INCREF(__pyx_int_1);
+    __Pyx_GIVEREF(__pyx_int_1);
+    PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_6, __pyx_int_1);
+    __Pyx_GIVEREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_2, 2+__pyx_t_6, __pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF_SET(__pyx_v__x, __pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":644
+ *     #create arccosine lookup table
+ *     _x = np.linspace(0,1,lookupRes+1)
+ *     cdef double[:] _acos = np.arccos(_x)             # <<<<<<<<<<<<<<
+ * 
+ *     #convert grid to xyz vectors
+ */
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 644, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_arccos); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 644, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  if (!__pyx_t_5) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v__x); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 644, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_v__x};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 644, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_v__x};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 644, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 644, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5); __pyx_t_5 = NULL;
+      __Pyx_INCREF(__pyx_v__x);
+      __Pyx_GIVEREF(__pyx_v__x);
+      PyTuple_SET_ITEM(__pyx_t_3, 0+1, __pyx_v__x);
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 644, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+  if (unlikely(!__pyx_t_10.memview)) __PYX_ERR(0, 644, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v__acos = __pyx_t_10;
+  __pyx_t_10.memview = NULL;
+  __pyx_t_10.data = NULL;
+
+  /* "pycompass/SNE/pdf.pyx":647
+ * 
+ *     #convert grid to xyz vectors
+ *     gxyz = []             # <<<<<<<<<<<<<<
+ *     for _lat,_lon in np.array(grid).T:
+ *         gxyz.append( llToVec(_lat,_lon) )
+ */
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_gxyz = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":648
+ *     #convert grid to xyz vectors
+ *     gxyz = []
+ *     for _lat,_lon in np.array(grid).T:             # <<<<<<<<<<<<<<
+ *         gxyz.append( llToVec(_lat,_lon) )
+ *     gxyz = np.array(gxyz)
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_2)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_2);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+    }
+  }
+  if (!__pyx_t_2) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_grid)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_2, ((PyObject *)__pyx_v_grid)};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_2, ((PyObject *)__pyx_v_grid)};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2); __pyx_t_2 = NULL;
+      __Pyx_INCREF(((PyObject *)__pyx_v_grid));
+      __Pyx_GIVEREF(((PyObject *)__pyx_v_grid));
+      PyTuple_SET_ITEM(__pyx_t_5, 0+1, ((PyObject *)__pyx_v_grid));
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_T); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
+    __pyx_t_1 = __pyx_t_3; __Pyx_INCREF(__pyx_t_1); __pyx_t_11 = 0;
+    __pyx_t_12 = NULL;
+  } else {
+    __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_12 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 648, __pyx_L1_error)
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  for (;;) {
+    if (likely(!__pyx_t_12)) {
+      if (likely(PyList_CheckExact(__pyx_t_1))) {
+        if (__pyx_t_11 >= PyList_GET_SIZE(__pyx_t_1)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_3); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 648, __pyx_L1_error)
+        #else
+        __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 648, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        #endif
+      } else {
+        if (__pyx_t_11 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_3); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 648, __pyx_L1_error)
+        #else
+        __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 648, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        #endif
+      }
+    } else {
+      __pyx_t_3 = __pyx_t_12(__pyx_t_1);
+      if (unlikely(!__pyx_t_3)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
+          else __PYX_ERR(0, 648, __pyx_L1_error)
+        }
+        break;
+      }
+      __Pyx_GOTREF(__pyx_t_3);
+    }
+    if ((likely(PyTuple_CheckExact(__pyx_t_3))) || (PyList_CheckExact(__pyx_t_3))) {
+      PyObject* sequence = __pyx_t_3;
+      #if !CYTHON_COMPILING_IN_PYPY
+      Py_ssize_t size = Py_SIZE(sequence);
+      #else
+      Py_ssize_t size = PySequence_Size(sequence);
+      #endif
+      if (unlikely(size != 2)) {
+        if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+        else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+        __PYX_ERR(0, 648, __pyx_L1_error)
+      }
+      #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+      if (likely(PyTuple_CheckExact(sequence))) {
+        __pyx_t_5 = PyTuple_GET_ITEM(sequence, 0); 
+        __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1); 
+      } else {
+        __pyx_t_5 = PyList_GET_ITEM(sequence, 0); 
+        __pyx_t_2 = PyList_GET_ITEM(sequence, 1); 
+      }
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(__pyx_t_2);
+      #else
+      __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_2 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      #endif
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    } else {
+      Py_ssize_t index = -1;
+      __pyx_t_7 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 648, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_13 = Py_TYPE(__pyx_t_7)->tp_iternext;
+      index = 0; __pyx_t_5 = __pyx_t_13(__pyx_t_7); if (unlikely(!__pyx_t_5)) goto __pyx_L6_unpacking_failed;
+      __Pyx_GOTREF(__pyx_t_5);
+      index = 1; __pyx_t_2 = __pyx_t_13(__pyx_t_7); if (unlikely(!__pyx_t_2)) goto __pyx_L6_unpacking_failed;
+      __Pyx_GOTREF(__pyx_t_2);
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_13(__pyx_t_7), 2) < 0) __PYX_ERR(0, 648, __pyx_L1_error)
+      __pyx_t_13 = NULL;
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L7_unpacking_done;
+      __pyx_L6_unpacking_failed:;
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_13 = NULL;
+      if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+      __PYX_ERR(0, 648, __pyx_L1_error)
+      __pyx_L7_unpacking_done:;
+    }
+    __Pyx_XDECREF_SET(__pyx_v__lat, __pyx_t_5);
+    __pyx_t_5 = 0;
+    __Pyx_XDECREF_SET(__pyx_v__lon, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":649
+ *     gxyz = []
+ *     for _lat,_lon in np.array(grid).T:
+ *         gxyz.append( llToVec(_lat,_lon) )             # <<<<<<<<<<<<<<
+ *     gxyz = np.array(gxyz)
+ * 
+ */
+    __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_llToVec); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_5 = NULL;
+    __pyx_t_6 = 0;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_2);
+      if (likely(__pyx_t_5)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+        __Pyx_INCREF(__pyx_t_5);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_2, function);
+        __pyx_t_6 = 1;
+      }
+    }
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v__lat, __pyx_v__lon};
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_3);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v__lat, __pyx_v__lon};
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_3);
+    } else
+    #endif
+    {
+      __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 649, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      if (__pyx_t_5) {
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
+      }
+      __Pyx_INCREF(__pyx_v__lat);
+      __Pyx_GIVEREF(__pyx_v__lat);
+      PyTuple_SET_ITEM(__pyx_t_7, 0+__pyx_t_6, __pyx_v__lat);
+      __Pyx_INCREF(__pyx_v__lon);
+      __Pyx_GIVEREF(__pyx_v__lon);
+      PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_v__lon);
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_14 = __Pyx_PyObject_Append(__pyx_v_gxyz, __pyx_t_3); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":648
+ *     #convert grid to xyz vectors
+ *     gxyz = []
+ *     for _lat,_lon in np.array(grid).T:             # <<<<<<<<<<<<<<
+ *         gxyz.append( llToVec(_lat,_lon) )
+ *     gxyz = np.array(gxyz)
+ */
+  }
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":650
+ *     for _lat,_lon in np.array(grid).T:
+ *         gxyz.append( llToVec(_lat,_lon) )
+ *     gxyz = np.array(gxyz)             # <<<<<<<<<<<<<<
+ * 
+ *     #convert data to xyz vectors
+ */
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_3)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_3);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  if (!__pyx_t_3) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_gxyz); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_v_gxyz};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_3, __pyx_v_gxyz};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 650, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_3); __pyx_t_3 = NULL;
+      __Pyx_INCREF(__pyx_v_gxyz);
+      __Pyx_GIVEREF(__pyx_v_gxyz);
+      PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_v_gxyz);
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF_SET(__pyx_v_gxyz, __pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":653
+ * 
+ *     #convert data to xyz vectors
+ *     dxyz = []             # <<<<<<<<<<<<<<
+ *     for _t,_p in np.array(data).T:
+ *         if kwds.get("degrees",True):
+ */
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 653, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_dxyz = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":654
+ *     #convert data to xyz vectors
+ *     dxyz = []
+ *     for _t,_p in np.array(data).T:             # <<<<<<<<<<<<<<
+ *         if kwds.get("degrees",True):
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
+    __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_7);
+    if (likely(__pyx_t_2)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+      __Pyx_INCREF(__pyx_t_2);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_7, function);
+    }
+  }
+  if (!__pyx_t_2) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_7, ((PyObject *)__pyx_v_data)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_7)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_2, ((PyObject *)__pyx_v_data)};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_2, ((PyObject *)__pyx_v_data)};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_3 = PyTuple_New(1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2); __pyx_t_2 = NULL;
+      __Pyx_INCREF(((PyObject *)__pyx_v_data));
+      __Pyx_GIVEREF(((PyObject *)__pyx_v_data));
+      PyTuple_SET_ITEM(__pyx_t_3, 0+1, ((PyObject *)__pyx_v_data));
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_T); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (likely(PyList_CheckExact(__pyx_t_7)) || PyTuple_CheckExact(__pyx_t_7)) {
+    __pyx_t_1 = __pyx_t_7; __Pyx_INCREF(__pyx_t_1); __pyx_t_11 = 0;
+    __pyx_t_12 = NULL;
+  } else {
+    __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_12 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 654, __pyx_L1_error)
+  }
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  for (;;) {
+    if (likely(!__pyx_t_12)) {
+      if (likely(PyList_CheckExact(__pyx_t_1))) {
+        if (__pyx_t_11 >= PyList_GET_SIZE(__pyx_t_1)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_7 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_7); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 654, __pyx_L1_error)
+        #else
+        __pyx_t_7 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 654, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        #endif
+      } else {
+        if (__pyx_t_11 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_7 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_7); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 654, __pyx_L1_error)
+        #else
+        __pyx_t_7 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 654, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        #endif
+      }
+    } else {
+      __pyx_t_7 = __pyx_t_12(__pyx_t_1);
+      if (unlikely(!__pyx_t_7)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
+          else __PYX_ERR(0, 654, __pyx_L1_error)
+        }
+        break;
+      }
+      __Pyx_GOTREF(__pyx_t_7);
+    }
+    if ((likely(PyTuple_CheckExact(__pyx_t_7))) || (PyList_CheckExact(__pyx_t_7))) {
+      PyObject* sequence = __pyx_t_7;
+      #if !CYTHON_COMPILING_IN_PYPY
+      Py_ssize_t size = Py_SIZE(sequence);
+      #else
+      Py_ssize_t size = PySequence_Size(sequence);
+      #endif
+      if (unlikely(size != 2)) {
+        if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+        else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+        __PYX_ERR(0, 654, __pyx_L1_error)
+      }
+      #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+      if (likely(PyTuple_CheckExact(sequence))) {
+        __pyx_t_3 = PyTuple_GET_ITEM(sequence, 0); 
+        __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1); 
+      } else {
+        __pyx_t_3 = PyList_GET_ITEM(sequence, 0); 
+        __pyx_t_2 = PyList_GET_ITEM(sequence, 1); 
+      }
+      __Pyx_INCREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_2);
+      #else
+      __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_2 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      #endif
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    } else {
+      Py_ssize_t index = -1;
+      __pyx_t_5 = PyObject_GetIter(__pyx_t_7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 654, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_13 = Py_TYPE(__pyx_t_5)->tp_iternext;
+      index = 0; __pyx_t_3 = __pyx_t_13(__pyx_t_5); if (unlikely(!__pyx_t_3)) goto __pyx_L10_unpacking_failed;
+      __Pyx_GOTREF(__pyx_t_3);
+      index = 1; __pyx_t_2 = __pyx_t_13(__pyx_t_5); if (unlikely(!__pyx_t_2)) goto __pyx_L10_unpacking_failed;
+      __Pyx_GOTREF(__pyx_t_2);
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_13(__pyx_t_5), 2) < 0) __PYX_ERR(0, 654, __pyx_L1_error)
+      __pyx_t_13 = NULL;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      goto __pyx_L11_unpacking_done;
+      __pyx_L10_unpacking_failed:;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_13 = NULL;
+      if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+      __PYX_ERR(0, 654, __pyx_L1_error)
+      __pyx_L11_unpacking_done:;
+    }
+    __Pyx_XDECREF_SET(__pyx_v__t, __pyx_t_3);
+    __pyx_t_3 = 0;
+    __Pyx_XDECREF_SET(__pyx_v__p, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "pycompass/SNE/pdf.pyx":655
+ *     dxyz = []
+ *     for _t,_p in np.array(data).T:
+ *         if kwds.get("degrees",True):             # <<<<<<<<<<<<<<
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+ *         else:
+ */
+    __pyx_t_7 = __Pyx_PyDict_GetItemDefault(__pyx_v_kwds, __pyx_n_s_degrees, Py_True); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 655, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 655, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    if (__pyx_t_8) {
+
+      /* "pycompass/SNE/pdf.pyx":656
+ *     for _t,_p in np.array(data).T:
+ *         if kwds.get("degrees",True):
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )             # <<<<<<<<<<<<<<
+ *         else:
+ *             dxyz.append( trendPlunge2Vec(_t,_p) )
+ */
+      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_trendPlunge2Vec); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_deg2rad); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_5 = NULL;
+      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_v__t); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+      } else {
+        #if CYTHON_FAST_PYCALL
+        if (PyFunction_Check(__pyx_t_4)) {
+          PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_v__t};
+          __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_GOTREF(__pyx_t_3);
+        } else
+        #endif
+        #if CYTHON_FAST_PYCCALL
+        if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
+          PyObject *__pyx_temp[2] = {__pyx_t_5, __pyx_v__t};
+          __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_GOTREF(__pyx_t_3);
+        } else
+        #endif
+        {
+          __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_15);
+          __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_5); __pyx_t_5 = NULL;
+          __Pyx_INCREF(__pyx_v__t);
+          __Pyx_GIVEREF(__pyx_v__t);
+          PyTuple_SET_ITEM(__pyx_t_15, 0+1, __pyx_v__t);
+          __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_15, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_3);
+          __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_15 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_15);
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_15, __pyx_n_s_deg2rad); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+      __pyx_t_15 = NULL;
+      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
+        __pyx_t_15 = PyMethod_GET_SELF(__pyx_t_5);
+        if (likely(__pyx_t_15)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+          __Pyx_INCREF(__pyx_t_15);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_5, function);
+        }
+      }
+      if (!__pyx_t_15) {
+        __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_v__p); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_4);
+      } else {
+        #if CYTHON_FAST_PYCALL
+        if (PyFunction_Check(__pyx_t_5)) {
+          PyObject *__pyx_temp[2] = {__pyx_t_15, __pyx_v__p};
+          __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
+          __Pyx_GOTREF(__pyx_t_4);
+        } else
+        #endif
+        #if CYTHON_FAST_PYCCALL
+        if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
+          PyObject *__pyx_temp[2] = {__pyx_t_15, __pyx_v__p};
+          __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
+          __Pyx_GOTREF(__pyx_t_4);
+        } else
+        #endif
+        {
+          __pyx_t_16 = PyTuple_New(1+1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_16);
+          __Pyx_GIVEREF(__pyx_t_15); PyTuple_SET_ITEM(__pyx_t_16, 0, __pyx_t_15); __pyx_t_15 = NULL;
+          __Pyx_INCREF(__pyx_v__p);
+          __Pyx_GIVEREF(__pyx_v__p);
+          PyTuple_SET_ITEM(__pyx_t_16, 0+1, __pyx_v__p);
+          __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_16, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 656, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_4);
+          __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_5 = NULL;
+      __pyx_t_6 = 0;
+      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_2);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_2, function);
+          __pyx_t_6 = 1;
+        }
+      }
+      #if CYTHON_FAST_PYCALL
+      if (PyFunction_Check(__pyx_t_2)) {
+        PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_3, __pyx_t_4};
+        __pyx_t_7 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else
+      #endif
+      #if CYTHON_FAST_PYCCALL
+      if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+        PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_3, __pyx_t_4};
+        __pyx_t_7 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else
+      #endif
+      {
+        __pyx_t_16 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_16);
+        if (__pyx_t_5) {
+          __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_16, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        }
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_16, 0+__pyx_t_6, __pyx_t_3);
+        __Pyx_GIVEREF(__pyx_t_4);
+        PyTuple_SET_ITEM(__pyx_t_16, 1+__pyx_t_6, __pyx_t_4);
+        __pyx_t_3 = 0;
+        __pyx_t_4 = 0;
+        __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_16, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 656, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_14 = __Pyx_PyObject_Append(__pyx_v_dxyz, __pyx_t_7); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 656, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+      /* "pycompass/SNE/pdf.pyx":655
+ *     dxyz = []
+ *     for _t,_p in np.array(data).T:
+ *         if kwds.get("degrees",True):             # <<<<<<<<<<<<<<
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+ *         else:
+ */
+      goto __pyx_L12;
+    }
+
+    /* "pycompass/SNE/pdf.pyx":658
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+ *         else:
+ *             dxyz.append( trendPlunge2Vec(_t,_p) )             # <<<<<<<<<<<<<<
+ *     dxyz = np.array(dxyz)
+ * 
+ */
+    /*else*/ {
+      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_trendPlunge2Vec); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 658, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_16 = NULL;
+      __pyx_t_6 = 0;
+      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+        __pyx_t_16 = PyMethod_GET_SELF(__pyx_t_2);
+        if (likely(__pyx_t_16)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+          __Pyx_INCREF(__pyx_t_16);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_2, function);
+          __pyx_t_6 = 1;
+        }
+      }
+      #if CYTHON_FAST_PYCALL
+      if (PyFunction_Check(__pyx_t_2)) {
+        PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v__t, __pyx_v__p};
+        __pyx_t_7 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 658, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
+        __Pyx_GOTREF(__pyx_t_7);
+      } else
+      #endif
+      #if CYTHON_FAST_PYCCALL
+      if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+        PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_v__t, __pyx_v__p};
+        __pyx_t_7 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 658, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
+        __Pyx_GOTREF(__pyx_t_7);
+      } else
+      #endif
+      {
+        __pyx_t_4 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 658, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        if (__pyx_t_16) {
+          __Pyx_GIVEREF(__pyx_t_16); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_16); __pyx_t_16 = NULL;
+        }
+        __Pyx_INCREF(__pyx_v__t);
+        __Pyx_GIVEREF(__pyx_v__t);
+        PyTuple_SET_ITEM(__pyx_t_4, 0+__pyx_t_6, __pyx_v__t);
+        __Pyx_INCREF(__pyx_v__p);
+        __Pyx_GIVEREF(__pyx_v__p);
+        PyTuple_SET_ITEM(__pyx_t_4, 1+__pyx_t_6, __pyx_v__p);
+        __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 658, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_14 = __Pyx_PyObject_Append(__pyx_v_dxyz, __pyx_t_7); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 658, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    }
+    __pyx_L12:;
+
+    /* "pycompass/SNE/pdf.pyx":654
+ *     #convert data to xyz vectors
+ *     dxyz = []
+ *     for _t,_p in np.array(data).T:             # <<<<<<<<<<<<<<
+ *         if kwds.get("degrees",True):
+ *             dxyz.append( trendPlunge2Vec(np.deg2rad(_t),np.deg2rad(_p)) )
+ */
+  }
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":659
+ *         else:
+ *             dxyz.append( trendPlunge2Vec(_t,_p) )
+ *     dxyz = np.array(dxyz)             # <<<<<<<<<<<<<<
+ * 
+ *     #evaluate and return
+ */
+  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 659, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_array); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 659, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_7)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_7);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  if (!__pyx_t_7) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_dxyz); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v_dxyz};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v_dxyz};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else
+    #endif
+    {
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_7); __pyx_t_7 = NULL;
+      __Pyx_INCREF(__pyx_v_dxyz);
+      __Pyx_GIVEREF(__pyx_v_dxyz);
+      PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_v_dxyz);
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF_SET(__pyx_v_dxyz, __pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":662
+ * 
+ *     #evaluate and return
+ *     return np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_gxyz, __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_7 = __Pyx_GetItemInt(__pyx_t_2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_dxyz, __pyx_n_s_shape); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_7, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_17 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_17 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_18 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_v_gxyz);
+  if (unlikely(!__pyx_t_18.memview)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_19 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_v_dxyz);
+  if (unlikely(!__pyx_t_19.memview)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_9 = __pyx_PyFloat_AsDouble(__pyx_v_lookupRes); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_10 = __pyx_f_9pycompass_3SNE_3pdf_fillKDE(__pyx_t_6, __pyx_t_17, __pyx_t_18, __pyx_t_19, __pyx_v__N, __pyx_v__acos, __pyx_t_9); if (unlikely(!__pyx_t_10.memview)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __PYX_XDEC_MEMVIEW(&__pyx_t_18, 1);
+  __pyx_t_18.memview = NULL;
+  __pyx_t_18.data = NULL;
+  __PYX_XDEC_MEMVIEW(&__pyx_t_19, 1);
+  __pyx_t_19.memview = NULL;
+  __pyx_t_19.data = NULL;
+  __pyx_t_2 = __pyx_memoryview_fromslice(__pyx_t_10, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
+  __pyx_t_10.memview = NULL;
+  __pyx_t_10.data = NULL;
+  __pyx_t_7 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_4))) {
+    __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_4);
+    if (likely(__pyx_t_7)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+      __Pyx_INCREF(__pyx_t_7);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_4, function);
+    }
+  }
+  if (!__pyx_t_7) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_4)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    {
+      __pyx_t_16 = PyTuple_New(1+1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 662, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_16);
+      __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_16, 0, __pyx_t_7); __pyx_t_7 = NULL;
+      __Pyx_GIVEREF(__pyx_t_2);
+      PyTuple_SET_ITEM(__pyx_t_16, 0+1, __pyx_t_2);
+      __pyx_t_2 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pycompass/SNE/pdf.pyx":634
+ *  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees).
+ * """
+ * def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):             # <<<<<<<<<<<<<<
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_7);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
+  __Pyx_XDECREF(__pyx_t_15);
+  __Pyx_XDECREF(__pyx_t_16);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_18, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_19, 1);
+  __Pyx_AddTraceback("pycompass.SNE.pdf.sphericalKDE", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_lookupRes);
+  __Pyx_XDECREF(__pyx_v__x);
+  __PYX_XDEC_MEMVIEW(&__pyx_v__N, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v__acos, 1);
+  __Pyx_XDECREF(__pyx_v_gxyz);
+  __Pyx_XDECREF(__pyx_v__lat);
+  __Pyx_XDECREF(__pyx_v__lon);
+  __Pyx_XDECREF(__pyx_v_dxyz);
+  __Pyx_XDECREF(__pyx_v__t);
+  __Pyx_XDECREF(__pyx_v__p);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -26696,6 +28486,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_MemoryView_of_r_at_0x_x, __pyx_k_MemoryView_of_r_at_0x_x, sizeof(__pyx_k_MemoryView_of_r_at_0x_x), 0, 0, 1, 0},
   {&__pyx_kp_s_MemoryView_of_r_object, __pyx_k_MemoryView_of_r_object, sizeof(__pyx_k_MemoryView_of_r_object), 0, 0, 1, 0},
   {&__pyx_n_s_N, __pyx_k_N, sizeof(__pyx_k_N), 0, 0, 1, 1},
+  {&__pyx_n_s_N_2, __pyx_k_N_2, sizeof(__pyx_k_N_2), 0, 0, 1, 1},
   {&__pyx_kp_u_Non_native_byte_order_not_suppor, __pyx_k_Non_native_byte_order_not_suppor, sizeof(__pyx_k_Non_native_byte_order_not_suppor), 0, 1, 0, 0},
   {&__pyx_kp_s_Normal_must_be_a_list_of_3_compo, __pyx_k_Normal_must_be_a_list_of_3_compo, sizeof(__pyx_k_Normal_must_be_a_list_of_3_compo), 0, 0, 1, 0},
   {&__pyx_n_b_O, __pyx_k_O, sizeof(__pyx_k_O), 0, 0, 0, 1},
@@ -26703,6 +28494,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_PickleError, __pyx_k_PickleError, sizeof(__pyx_k_PickleError), 0, 0, 1, 1},
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Sampled_d_points_in_d_iterations, __pyx_k_Sampled_d_points_in_d_iterations, sizeof(__pyx_k_Sampled_d_points_in_d_iterations), 0, 0, 1, 0},
+  {&__pyx_n_s_T, __pyx_k_T, sizeof(__pyx_k_T), 0, 0, 1, 1},
   {&__pyx_n_s_TypeError, __pyx_k_TypeError, sizeof(__pyx_k_TypeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Unable_to_convert_item_to_object, __pyx_k_Unable_to_convert_item_to_object, sizeof(__pyx_k_Unable_to_convert_item_to_object), 0, 0, 1, 0},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
@@ -26712,11 +28504,15 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_Warning_MCMC_sampler_could_not_f, __pyx_k_Warning_MCMC_sampler_could_not_f, sizeof(__pyx_k_Warning_MCMC_sampler_could_not_f), 0, 0, 1, 0},
   {&__pyx_n_s_X, __pyx_k_X, sizeof(__pyx_k_X), 0, 0, 1, 1},
   {&__pyx_n_s__45, __pyx_k__45, sizeof(__pyx_k__45), 0, 0, 1, 1},
+  {&__pyx_n_s_acos, __pyx_k_acos, sizeof(__pyx_k_acos), 0, 0, 1, 1},
   {&__pyx_n_s_allocate_buffer, __pyx_k_allocate_buffer, sizeof(__pyx_k_allocate_buffer), 0, 0, 1, 1},
   {&__pyx_n_s_alpha, __pyx_k_alpha, sizeof(__pyx_k_alpha), 0, 0, 1, 1},
+  {&__pyx_n_s_append, __pyx_k_append, sizeof(__pyx_k_append), 0, 0, 1, 1},
   {&__pyx_n_s_arc, __pyx_k_arc, sizeof(__pyx_k_arc), 0, 0, 1, 1},
+  {&__pyx_n_s_arccos, __pyx_k_arccos, sizeof(__pyx_k_arccos), 0, 0, 1, 1},
   {&__pyx_n_s_argsort, __pyx_k_argsort, sizeof(__pyx_k_argsort), 0, 0, 1, 1},
   {&__pyx_n_s_array, __pyx_k_array, sizeof(__pyx_k_array), 0, 0, 1, 1},
+  {&__pyx_n_s_bandwidth, __pyx_k_bandwidth, sizeof(__pyx_k_bandwidth), 0, 0, 1, 1},
   {&__pyx_n_s_base, __pyx_k_base, sizeof(__pyx_k_base), 0, 0, 1, 1},
   {&__pyx_n_s_bound, __pyx_k_bound, sizeof(__pyx_k_bound), 0, 0, 1, 1},
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
@@ -26729,6 +28525,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_contiguous_and_indirect, __pyx_k_contiguous_and_indirect, sizeof(__pyx_k_contiguous_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_cov, __pyx_k_cov, sizeof(__pyx_k_cov), 0, 0, 1, 1},
   {&__pyx_n_s_cross, __pyx_k_cross, sizeof(__pyx_k_cross), 0, 0, 1, 1},
+  {&__pyx_n_s_data, __pyx_k_data, sizeof(__pyx_k_data), 0, 0, 1, 1},
+  {&__pyx_n_s_deg2rad, __pyx_k_deg2rad, sizeof(__pyx_k_deg2rad), 0, 0, 1, 1},
+  {&__pyx_n_s_degrees, __pyx_k_degrees, sizeof(__pyx_k_degrees), 0, 0, 1, 1},
   {&__pyx_n_s_det, __pyx_k_det, sizeof(__pyx_k_det), 0, 0, 1, 1},
   {&__pyx_n_s_df, __pyx_k_df, sizeof(__pyx_k_df), 0, 0, 1, 1},
   {&__pyx_n_s_dict, __pyx_k_dict, sizeof(__pyx_k_dict), 0, 0, 1, 1},
@@ -26736,6 +28535,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_double, __pyx_k_double, sizeof(__pyx_k_double), 0, 0, 1, 1},
   {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_dtype_is_object, __pyx_k_dtype_is_object, sizeof(__pyx_k_dtype_is_object), 0, 0, 1, 1},
+  {&__pyx_n_s_dxyz, __pyx_k_dxyz, sizeof(__pyx_k_dxyz), 0, 0, 1, 1},
   {&__pyx_n_s_e1, __pyx_k_e1, sizeof(__pyx_k_e1), 0, 0, 1, 1},
   {&__pyx_n_s_e11, __pyx_k_e11, sizeof(__pyx_k_e11), 0, 0, 1, 1},
   {&__pyx_n_s_e12, __pyx_k_e12, sizeof(__pyx_k_e12), 0, 0, 1, 1},
@@ -26761,12 +28561,14 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_n_s_gammaln, __pyx_k_gammaln, sizeof(__pyx_k_gammaln), 0, 0, 1, 1},
+  {&__pyx_n_s_get, __pyx_k_get, sizeof(__pyx_k_get), 0, 0, 1, 1},
   {&__pyx_n_s_getPosteriorDensityAt, __pyx_k_getPosteriorDensityAt, sizeof(__pyx_k_getPosteriorDensityAt), 0, 0, 1, 1},
   {&__pyx_n_s_getstate, __pyx_k_getstate, sizeof(__pyx_k_getstate), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
   {&__pyx_n_s_grid, __pyx_k_grid, sizeof(__pyx_k_grid), 0, 0, 1, 1},
   {&__pyx_n_s_gridArc, __pyx_k_gridArc, sizeof(__pyx_k_gridArc), 0, 0, 1, 1},
   {&__pyx_n_s_gridSamples, __pyx_k_gridSamples, sizeof(__pyx_k_gridSamples), 0, 0, 1, 1},
+  {&__pyx_n_s_gxyz, __pyx_k_gxyz, sizeof(__pyx_k_gxyz), 0, 0, 1, 1},
   {&__pyx_n_s_hp, __pyx_k_hp, sizeof(__pyx_k_hp), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
@@ -26777,6 +28579,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_iter, __pyx_k_iter, sizeof(__pyx_k_iter), 0, 0, 1, 1},
   {&__pyx_n_s_ix, __pyx_k_ix, sizeof(__pyx_k_ix), 0, 0, 1, 1},
   {&__pyx_n_s_iy, __pyx_k_iy, sizeof(__pyx_k_iy), 0, 0, 1, 1},
+  {&__pyx_n_s_kwds, __pyx_k_kwds, sizeof(__pyx_k_kwds), 0, 0, 1, 1},
   {&__pyx_n_s_lat, __pyx_k_lat, sizeof(__pyx_k_lat), 0, 0, 1, 1},
   {&__pyx_n_s_lat_2, __pyx_k_lat_2, sizeof(__pyx_k_lat_2), 0, 0, 1, 1},
   {&__pyx_n_s_lik, __pyx_k_lik, sizeof(__pyx_k_lik), 0, 0, 1, 1},
@@ -26791,6 +28594,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_log_p_proposed, __pyx_k_log_p_proposed, sizeof(__pyx_k_log_p_proposed), 0, 0, 1, 1},
   {&__pyx_n_s_lon, __pyx_k_lon, sizeof(__pyx_k_lon), 0, 0, 1, 1},
   {&__pyx_n_s_lon_2, __pyx_k_lon_2, sizeof(__pyx_k_lon_2), 0, 0, 1, 1},
+  {&__pyx_n_s_lookupRes, __pyx_k_lookupRes, sizeof(__pyx_k_lookupRes), 0, 0, 1, 1},
   {&__pyx_n_s_lsf, __pyx_k_lsf, sizeof(__pyx_k_lsf), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_maxIter, __pyx_k_maxIter, sizeof(__pyx_k_maxIter), 0, 0, 1, 1},
@@ -26819,6 +28623,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_nz, __pyx_k_nz, sizeof(__pyx_k_nz), 0, 0, 1, 1},
   {&__pyx_n_s_obj, __pyx_k_obj, sizeof(__pyx_k_obj), 0, 0, 1, 1},
   {&__pyx_n_s_out, __pyx_k_out, sizeof(__pyx_k_out), 0, 0, 1, 1},
+  {&__pyx_n_s_p, __pyx_k_p, sizeof(__pyx_k_p), 0, 0, 1, 1},
   {&__pyx_n_s_p11, __pyx_k_p11, sizeof(__pyx_k_p11), 0, 0, 1, 1},
   {&__pyx_n_s_p12, __pyx_k_p12, sizeof(__pyx_k_p12), 0, 0, 1, 1},
   {&__pyx_n_s_p13, __pyx_k_p13, sizeof(__pyx_k_p13), 0, 0, 1, 1},
@@ -26826,6 +28631,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_p23, __pyx_k_p23, sizeof(__pyx_k_p23), 0, 0, 1, 1},
   {&__pyx_n_s_p33, __pyx_k_p33, sizeof(__pyx_k_p33), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
+  {&__pyx_n_s_pdf, __pyx_k_pdf, sizeof(__pyx_k_pdf), 0, 0, 1, 1},
   {&__pyx_n_s_phi, __pyx_k_phi, sizeof(__pyx_k_phi), 0, 0, 1, 1},
   {&__pyx_n_s_pi, __pyx_k_pi, sizeof(__pyx_k_pi), 0, 0, 1, 1},
   {&__pyx_n_s_pickle, __pyx_k_pickle, sizeof(__pyx_k_pickle), 0, 0, 1, 1},
@@ -26855,6 +28661,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_reduce_ex, __pyx_k_reduce_ex, sizeof(__pyx_k_reduce_ex), 0, 0, 1, 1},
   {&__pyx_n_s_samplePosteriorMCMC, __pyx_k_samplePosteriorMCMC, sizeof(__pyx_k_samplePosteriorMCMC), 0, 0, 1, 1},
   {&__pyx_n_s_scipy_special, __pyx_k_scipy_special, sizeof(__pyx_k_scipy_special), 0, 0, 1, 1},
+  {&__pyx_n_s_scipy_stats, __pyx_k_scipy_stats, sizeof(__pyx_k_scipy_stats), 0, 0, 1, 1},
   {&__pyx_n_s_setstate, __pyx_k_setstate, sizeof(__pyx_k_setstate), 0, 0, 1, 1},
   {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
   {&__pyx_n_s_sf, __pyx_k_sf, sizeof(__pyx_k_sf), 0, 0, 1, 1},
@@ -26862,7 +28669,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_sort, __pyx_k_sort, sizeof(__pyx_k_sort), 0, 0, 1, 1},
   {&__pyx_n_s_sp, __pyx_k_sp, sizeof(__pyx_k_sp), 0, 0, 1, 1},
+  {&__pyx_n_s_sphericalKDE, __pyx_k_sphericalKDE, sizeof(__pyx_k_sphericalKDE), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
+  {&__pyx_n_s_stats, __pyx_k_stats, sizeof(__pyx_k_stats), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_steps, __pyx_k_steps, sizeof(__pyx_k_steps), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -26871,6 +28680,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_strided_and_indirect, __pyx_k_strided_and_indirect, sizeof(__pyx_k_strided_and_indirect), 0, 0, 1, 0},
   {&__pyx_kp_s_stringsource, __pyx_k_stringsource, sizeof(__pyx_k_stringsource), 0, 0, 1, 0},
   {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
+  {&__pyx_n_s_t, __pyx_k_t, sizeof(__pyx_k_t), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_theta, __pyx_k_theta, sizeof(__pyx_k_theta), 0, 0, 1, 1},
   {&__pyx_n_s_trace, __pyx_k_trace, sizeof(__pyx_k_trace), 0, 0, 1, 1},
@@ -26886,15 +28696,16 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_vec2TrendPlunge, __pyx_k_vec2TrendPlunge, sizeof(__pyx_k_vec2TrendPlunge), 0, 0, 1, 1},
   {&__pyx_n_s_verbose, __pyx_k_verbose, sizeof(__pyx_k_verbose), 0, 0, 1, 1},
   {&__pyx_n_s_x, __pyx_k_x, sizeof(__pyx_k_x), 0, 0, 1, 1},
+  {&__pyx_n_s_x_2, __pyx_k_x_2, sizeof(__pyx_k_x_2), 0, 0, 1, 1},
   {&__pyx_n_s_xyz, __pyx_k_xyz, sizeof(__pyx_k_xyz), 0, 0, 1, 1},
   {&__pyx_n_s_y, __pyx_k_y, sizeof(__pyx_k_y), 0, 0, 1, 1},
   {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 44, __pyx_L1_error)
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 54, __pyx_L1_error)
-  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 464, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 466, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 823, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 1013, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(2, 146, __pyx_L1_error)
@@ -26911,152 +28722,152 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "pycompass/SNE/pdf.pyx":44
+  /* "pycompass/SNE/pdf.pyx":46
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")             # <<<<<<<<<<<<<<
  *     if normal.shape[0] != 3:
  *         raise ValueError("Normal must be a list of 3 components.")
  */
-  __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_s_Grid_must_contain_a_list_of_phi); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_s_Grid_must_contain_a_list_of_phi); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "pycompass/SNE/pdf.pyx":46
+  /* "pycompass/SNE/pdf.pyx":48
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if normal.shape[0] != 3:
  *         raise ValueError("Normal must be a list of 3 components.")             # <<<<<<<<<<<<<<
  * 
  *     #create location for output
  */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_Normal_must_be_a_list_of_3_compo); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_Normal_must_be_a_list_of_3_compo); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "pycompass/SNE/pdf.pyx":181
+  /* "pycompass/SNE/pdf.pyx":183
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")             # <<<<<<<<<<<<<<
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:
  *         raise ValueError("Inverse covariance must be a 3x3 matrix.")
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Grid_must_contain_a_list_of_phi); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Grid_must_contain_a_list_of_phi); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "pycompass/SNE/pdf.pyx":183
+  /* "pycompass/SNE/pdf.pyx":185
  *         raise ValueError("Grid must contain a list of phi and a list of theta.")
  *     if cov.shape[0] != 3 and cov.shape[1] != 3:
  *         raise ValueError("Inverse covariance must be a 3x3 matrix.")             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_s_Inverse_covariance_must_be_a_3x3); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_s_Inverse_covariance_must_be_a_3x3); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "pycompass/SNE/pdf.pyx":191
+  /* "pycompass/SNE/pdf.pyx":193
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_slice__5 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__5)) __PYX_ERR(0, 191, __pyx_L1_error)
+  __pyx_slice__5 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__5)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__5);
   __Pyx_GIVEREF(__pyx_slice__5);
 
-  /* "pycompass/SNE/pdf.pyx":239
+  /* "pycompass/SNE/pdf.pyx":241
  *     #get eigenvalues (these are treated as fixed to avoid the disgusting triple-integral needed to reduce them out otherwise...)
  *     eval,evec = np.linalg.eig(cov)
  *     eval[::-1].sort()             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_slice__6 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__6)) __PYX_ERR(0, 239, __pyx_L1_error)
+  __pyx_slice__6 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__6)) __PYX_ERR(0, 241, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__6);
   __Pyx_GIVEREF(__pyx_slice__6);
 
-  /* "pycompass/SNE/pdf.pyx":275
+  /* "pycompass/SNE/pdf.pyx":277
  *     #compute eigenvalues and vectors of cov
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...             # <<<<<<<<<<<<<<
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  */
-  __pyx_slice__8 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__8)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_slice__8 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__8)) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__8);
   __Pyx_GIVEREF(__pyx_slice__8);
 
-  /* "pycompass/SNE/pdf.pyx":277
+  /* "pycompass/SNE/pdf.pyx":279
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....             # <<<<<<<<<<<<<<
  *     cdef double e1 = eval[0]
  *     cdef double e2 = eval[1]
  */
-  __pyx_slice__9 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__9)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __pyx_slice__9 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__9)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__9);
   __Pyx_GIVEREF(__pyx_slice__9);
 
-  /* "pycompass/SNE/pdf.pyx":286
+  /* "pycompass/SNE/pdf.pyx":288
  * 
  *     #set initial phi,theta to trend,plunge of third eigenvector of covariance
  *     chain[0,0],chain[0,1] = vec2TrendPlunge(evec[:,2])             # <<<<<<<<<<<<<<
  * 
  *     #calculate alpha and set to initial value
  */
-  __pyx_slice__10 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__10)) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_slice__10 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__10)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__10);
   __Pyx_GIVEREF(__pyx_slice__10);
-  __pyx_tuple__11 = PyTuple_Pack(2, __pyx_slice__10, __pyx_int_2); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 286, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(2, __pyx_slice__10, __pyx_int_2); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "pycompass/SNE/pdf.pyx":289
+  /* "pycompass/SNE/pdf.pyx":291
  * 
  *     #calculate alpha and set to initial value
  *     chain[0,2] = asin(evec[2,1]/cos(chain[0,1])) #alpha = arcsin(e2.z / cos(theta)) #change 2 back to 1?             # <<<<<<<<<<<<<<
  * 
  *     #compute log probability (density) of initial state
  */
-  __pyx_tuple__12 = PyTuple_Pack(2, __pyx_int_2, __pyx_int_1); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(2, __pyx_int_2, __pyx_int_1); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "pycompass/SNE/pdf.pyx":486
+  /* "pycompass/SNE/pdf.pyx":488
  *     #get eigens of icov
  *     eval,evec = np.linalg.eig(cov)
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...             # <<<<<<<<<<<<<<
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....
  */
-  __pyx_slice__13 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__13)) __PYX_ERR(0, 486, __pyx_L1_error)
+  __pyx_slice__13 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__13)) __PYX_ERR(0, 488, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__13);
   __Pyx_GIVEREF(__pyx_slice__13);
 
-  /* "pycompass/SNE/pdf.pyx":488
+  /* "pycompass/SNE/pdf.pyx":490
  *     idx = eval.argsort()[::-1] #sort eigens in decending order...
  *     eval = eval[idx]
  *     evec = evec[:,idx] #n.b. columns of evec are vectors....             # <<<<<<<<<<<<<<
  * 
  *     #get rotation axis (w)
  */
-  __pyx_slice__14 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__14)) __PYX_ERR(0, 488, __pyx_L1_error)
+  __pyx_slice__14 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__14)) __PYX_ERR(0, 490, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__14);
   __Pyx_GIVEREF(__pyx_slice__14);
 
-  /* "pycompass/SNE/pdf.pyx":491
+  /* "pycompass/SNE/pdf.pyx":493
  * 
  *     #get rotation axis (w)
  *     W = evec[:,0]             # <<<<<<<<<<<<<<
  * 
  *     #get start vector (A)
  */
-  __pyx_slice__15 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__15)) __PYX_ERR(0, 491, __pyx_L1_error)
+  __pyx_slice__15 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__15)) __PYX_ERR(0, 493, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__15);
   __Pyx_GIVEREF(__pyx_slice__15);
-  __pyx_tuple__16 = PyTuple_Pack(2, __pyx_slice__15, __pyx_int_0); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 491, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(2, __pyx_slice__15, __pyx_int_0); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 493, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
@@ -27360,185 +29171,197 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__44);
   __Pyx_GIVEREF(__pyx_tuple__44);
 
-  /* "pycompass/SNE/pdf.pyx":41
+  /* "pycompass/SNE/pdf.pyx":43
  * Evaluate prior probability over a grid.
  * """
  * def prior(np.ndarray grid, np.ndarray normal):             # <<<<<<<<<<<<<<
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  */
-  __pyx_tuple__46 = PyTuple_Pack(6, __pyx_n_s_grid, __pyx_n_s_normal, __pyx_n_s_out, __pyx_n_s_trend, __pyx_n_s_plunge, __pyx_n_s_i); if (unlikely(!__pyx_tuple__46)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_tuple__46 = PyTuple_Pack(6, __pyx_n_s_grid, __pyx_n_s_normal, __pyx_n_s_out, __pyx_n_s_trend, __pyx_n_s_plunge, __pyx_n_s_i); if (unlikely(!__pyx_tuple__46)) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__46);
   __Pyx_GIVEREF(__pyx_tuple__46);
-  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(2, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_prior, 41, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(2, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_prior, 43, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) __PYX_ERR(0, 43, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":178
+  /* "pycompass/SNE/pdf.pyx":180
  *  -steps = the number of integration steps to used. Default is 25.
  * """
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):             # <<<<<<<<<<<<<<
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  */
-  __pyx_tuple__48 = PyTuple_Pack(16, __pyx_n_s_grid, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_steps, __pyx_n_s_X, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_out, __pyx_n_s_trend, __pyx_n_s_plunge, __pyx_n_s_lsf, __pyx_n_s_points, __pyx_n_s_i); if (unlikely(!__pyx_tuple__48)) __PYX_ERR(0, 178, __pyx_L1_error)
+  __pyx_tuple__48 = PyTuple_Pack(16, __pyx_n_s_grid, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_steps, __pyx_n_s_X, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_out, __pyx_n_s_trend, __pyx_n_s_plunge, __pyx_n_s_lsf, __pyx_n_s_points, __pyx_n_s_i); if (unlikely(!__pyx_tuple__48)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__48);
   __Pyx_GIVEREF(__pyx_tuple__48);
-  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(4, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_likelihoodExp1D, 178, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) __PYX_ERR(0, 178, __pyx_L1_error)
+  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(4, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_likelihoodExp1D, 180, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) __PYX_ERR(0, 180, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":221
+  /* "pycompass/SNE/pdf.pyx":223
  *  -normal = the outcrop normal vector used to calculate the prior.
  * """
  * def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray normal, int steps=25 ):             # <<<<<<<<<<<<<<
  *     #evaluate prior and likelihood
  *     pr = prior(grid,normal)
  */
-  __pyx_tuple__50 = PyTuple_Pack(7, __pyx_n_s_grid, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_normal, __pyx_n_s_steps, __pyx_n_s_pr, __pyx_n_s_lik); if (unlikely(!__pyx_tuple__50)) __PYX_ERR(0, 221, __pyx_L1_error)
+  __pyx_tuple__50 = PyTuple_Pack(7, __pyx_n_s_grid, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_normal, __pyx_n_s_steps, __pyx_n_s_pr, __pyx_n_s_lik); if (unlikely(!__pyx_tuple__50)) __PYX_ERR(0, 223, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__50);
   __Pyx_GIVEREF(__pyx_tuple__50);
-  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(5, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_posteriorExp1D, 221, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) __PYX_ERR(0, 221, __pyx_L1_error)
+  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(5, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_posteriorExp1D, 223, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) __PYX_ERR(0, 223, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":233
+  /* "pycompass/SNE/pdf.pyx":235
  * Compute the posterior probability at the specified point.
  * """
  * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
-  __pyx_tuple__52 = PyTuple_Pack(13, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_n, __pyx_n_s_steps, __pyx_n_s_X, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_lsf); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __pyx_tuple__52 = PyTuple_Pack(13, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_n, __pyx_n_s_steps, __pyx_n_s_X, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_lsf); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 235, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__52);
   __Pyx_GIVEREF(__pyx_tuple__52);
-  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(6, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_getPosteriorDensityAt, 233, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(6, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_getPosteriorDensityAt, 235, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 235, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":269
+  /* "pycompass/SNE/pdf.pyx":271
  *  -a nsamples x 3 numpy array where each element contains each [phi,theta,alpha] in the markov chain
  * """
  * def samplePosteriorMCMC(np.ndarray cov, int nobserved, double[:] normal=None, int nsamples=5000, int maxIter=100000,double proposalWidth=0.075,verbose=True):             # <<<<<<<<<<<<<<
  *     #declare chain
  *     cdef double[:,:] chain = np.zeros([nsamples,3],dtype=np.double) #phi,theta,alpha
  */
-  __pyx_tuple__54 = PyTuple_Pack(27, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_normal, __pyx_n_s_nsamples, __pyx_n_s_maxIter, __pyx_n_s_proposalWidth, __pyx_n_s_verbose, __pyx_n_s_chain, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_idx, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_X, __pyx_n_s_sf, __pyx_n_s_log_p_current, __pyx_n_s_log_p_proposed, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_alpha, __pyx_n_s_nRand, __pyx_n_s_logURand, __pyx_n_s_c, __pyx_n_s_iter, __pyx_n_s_i, __pyx_n_s_randIdx); if (unlikely(!__pyx_tuple__54)) __PYX_ERR(0, 269, __pyx_L1_error)
+  __pyx_tuple__54 = PyTuple_Pack(27, __pyx_n_s_cov, __pyx_n_s_nobserved, __pyx_n_s_normal, __pyx_n_s_nsamples, __pyx_n_s_maxIter, __pyx_n_s_proposalWidth, __pyx_n_s_verbose, __pyx_n_s_chain, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_idx, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_X, __pyx_n_s_sf, __pyx_n_s_log_p_current, __pyx_n_s_log_p_proposed, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_alpha, __pyx_n_s_nRand, __pyx_n_s_logURand, __pyx_n_s_c, __pyx_n_s_iter, __pyx_n_s_i, __pyx_n_s_randIdx); if (unlikely(!__pyx_tuple__54)) __PYX_ERR(0, 271, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__54);
   __Pyx_GIVEREF(__pyx_tuple__54);
-  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(7, 0, 27, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_samplePosteriorMCMC, 269, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 269, __pyx_L1_error)
+  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(7, 0, 27, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_samplePosteriorMCMC, 271, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 271, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":385
+  /* "pycompass/SNE/pdf.pyx":387
  * -a density grid for plotting with mplstereneot.contourf or similar. Density values will sum to 1 over the domain.
  * """
  * def gridSamples(np.ndarray grid, double[:,:] trace):             # <<<<<<<<<<<<<<
  *     #create location for output
  *     cdef double[:] out = np.zeros([grid.shape[1]])
  */
-  __pyx_tuple__56 = PyTuple_Pack(13, __pyx_n_s_grid, __pyx_n_s_trace, __pyx_n_s_out, __pyx_n_s_N, __pyx_n_s_dl, __pyx_n_s_idx, __pyx_n_s_df, __pyx_n_s_hp, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_lat, __pyx_n_s_lon, __pyx_n_s_i); if (unlikely(!__pyx_tuple__56)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __pyx_tuple__56 = PyTuple_Pack(13, __pyx_n_s_grid, __pyx_n_s_trace, __pyx_n_s_out, __pyx_n_s_N, __pyx_n_s_dl, __pyx_n_s_idx, __pyx_n_s_df, __pyx_n_s_hp, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_lat, __pyx_n_s_lon, __pyx_n_s_i); if (unlikely(!__pyx_tuple__56)) __PYX_ERR(0, 387, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__56);
   __Pyx_GIVEREF(__pyx_tuple__56);
-  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(2, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_gridSamples, 385, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(2, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_gridSamples, 387, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 387, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":424
+  /* "pycompass/SNE/pdf.pyx":426
  * Utility function for creating covariance matrices from phi,theta, etc.
  * """
  * def constructCOV(double phi, double theta, double alpha, double e1, double e2, double e3 ):             # <<<<<<<<<<<<<<
  *     #build basis matrix containing with columns = eigenvectors
  *     cdef double e11,e12,e13,e21,e22,e23,e31,e32,e33
  */
-  __pyx_tuple__58 = PyTuple_Pack(21, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_alpha, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_e11, __pyx_n_s_e12, __pyx_n_s_e13, __pyx_n_s_e21, __pyx_n_s_e22, __pyx_n_s_e23, __pyx_n_s_e31, __pyx_n_s_e32, __pyx_n_s_e33, __pyx_n_s_p11, __pyx_n_s_p12, __pyx_n_s_p13, __pyx_n_s_p22, __pyx_n_s_p23, __pyx_n_s_p33); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 424, __pyx_L1_error)
+  __pyx_tuple__58 = PyTuple_Pack(21, __pyx_n_s_phi, __pyx_n_s_theta, __pyx_n_s_alpha, __pyx_n_s_e1, __pyx_n_s_e2, __pyx_n_s_e3, __pyx_n_s_e11, __pyx_n_s_e12, __pyx_n_s_e13, __pyx_n_s_e21, __pyx_n_s_e22, __pyx_n_s_e23, __pyx_n_s_e31, __pyx_n_s_e32, __pyx_n_s_e33, __pyx_n_s_p11, __pyx_n_s_p12, __pyx_n_s_p13, __pyx_n_s_p22, __pyx_n_s_p23, __pyx_n_s_p33); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 426, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__58);
   __Pyx_GIVEREF(__pyx_tuple__58);
-  __pyx_codeobj__59 = (PyObject*)__Pyx_PyCode_New(6, 0, 21, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__58, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_constructCOV, 424, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__59)) __PYX_ERR(0, 424, __pyx_L1_error)
+  __pyx_codeobj__59 = (PyObject*)__Pyx_PyCode_New(6, 0, 21, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__58, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_constructCOV, 426, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__59)) __PYX_ERR(0, 426, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":461
+  /* "pycompass/SNE/pdf.pyx":463
  *  - a grid of points such that each column represents a lat,long pair on the southern-hemisphere.
  * """
  * def grid(N=50):             # <<<<<<<<<<<<<<
  *     bound = pi / 2.0
  *     grid = np.zeros((2,N**2),dtype=np.double)
  */
-  __pyx_tuple__60 = PyTuple_Pack(7, __pyx_n_s_N, __pyx_n_s_bound, __pyx_n_s_grid, __pyx_n_s_ix, __pyx_n_s_lat_2, __pyx_n_s_iy, __pyx_n_s_lon_2); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(0, 461, __pyx_L1_error)
+  __pyx_tuple__60 = PyTuple_Pack(7, __pyx_n_s_N, __pyx_n_s_bound, __pyx_n_s_grid, __pyx_n_s_ix, __pyx_n_s_lat_2, __pyx_n_s_iy, __pyx_n_s_lon_2); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(0, 463, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__60);
   __Pyx_GIVEREF(__pyx_tuple__60);
-  __pyx_codeobj__61 = (PyObject*)__Pyx_PyCode_New(1, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__60, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_grid, 461, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__61)) __PYX_ERR(0, 461, __pyx_L1_error)
+  __pyx_codeobj__61 = (PyObject*)__Pyx_PyCode_New(1, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__60, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_grid, 463, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__61)) __PYX_ERR(0, 463, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":483
+  /* "pycompass/SNE/pdf.pyx":485
  *  - A numpy array with N rows and columns representing the latitude and longitude of the points.
  * """
  * def gridArc(double[:,:] cov,int N=50):             # <<<<<<<<<<<<<<
  *     #get eigens of icov
  *     eval,evec = np.linalg.eig(cov)
  */
-  __pyx_tuple__62 = PyTuple_Pack(13, __pyx_n_s_cov, __pyx_n_s_N, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_idx, __pyx_n_s_W, __pyx_n_s_A, __pyx_n_s_arc, __pyx_n_s_WA, __pyx_n_s_i, __pyx_n_s_alpha, __pyx_n_s_lat_2, __pyx_n_s_lon_2); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(0, 483, __pyx_L1_error)
+  __pyx_tuple__62 = PyTuple_Pack(13, __pyx_n_s_cov, __pyx_n_s_N, __pyx_n_s_eval, __pyx_n_s_evec, __pyx_n_s_idx, __pyx_n_s_W, __pyx_n_s_A, __pyx_n_s_arc, __pyx_n_s_WA, __pyx_n_s_i, __pyx_n_s_alpha, __pyx_n_s_lat_2, __pyx_n_s_lon_2); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(0, 485, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__62);
   __Pyx_GIVEREF(__pyx_tuple__62);
-  __pyx_codeobj__63 = (PyObject*)__Pyx_PyCode_New(2, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__62, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_gridArc, 483, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__63)) __PYX_ERR(0, 483, __pyx_L1_error)
+  __pyx_codeobj__63 = (PyObject*)__Pyx_PyCode_New(2, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__62, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_gridArc, 485, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__63)) __PYX_ERR(0, 485, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":518
+  /* "pycompass/SNE/pdf.pyx":520
  *  - plunge = the plunge of the vector (in radians)
  * """
  * def vec2TrendPlunge(double[:] xyz):             # <<<<<<<<<<<<<<
  *     cdef np.ndarray out = np.zeros([2])
  *     out[0] =  atan2(xyz[0],xyz[1])
  */
-  __pyx_tuple__64 = PyTuple_Pack(3, __pyx_n_s_xyz, __pyx_n_s_xyz, __pyx_n_s_out); if (unlikely(!__pyx_tuple__64)) __PYX_ERR(0, 518, __pyx_L1_error)
+  __pyx_tuple__64 = PyTuple_Pack(3, __pyx_n_s_xyz, __pyx_n_s_xyz, __pyx_n_s_out); if (unlikely(!__pyx_tuple__64)) __PYX_ERR(0, 520, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__64);
   __Pyx_GIVEREF(__pyx_tuple__64);
-  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_vec2TrendPlunge, 518, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) __PYX_ERR(0, 518, __pyx_L1_error)
+  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_vec2TrendPlunge, 520, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) __PYX_ERR(0, 520, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":541
+  /* "pycompass/SNE/pdf.pyx":543
  *  - lon = the longitude of the point defined by the intersection of this vector and the unit sphere
  * """
  * def vec2LL(double[:] xyz):             # <<<<<<<<<<<<<<
  *     cdef double lat = asin(-xyz[1])
  *     return np.array( [lat, asin(xyz[0]/cos(lat))] )
  */
-  __pyx_tuple__66 = PyTuple_Pack(3, __pyx_n_s_xyz, __pyx_n_s_xyz, __pyx_n_s_lat); if (unlikely(!__pyx_tuple__66)) __PYX_ERR(0, 541, __pyx_L1_error)
+  __pyx_tuple__66 = PyTuple_Pack(3, __pyx_n_s_xyz, __pyx_n_s_xyz, __pyx_n_s_lat); if (unlikely(!__pyx_tuple__66)) __PYX_ERR(0, 543, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__66);
   __Pyx_GIVEREF(__pyx_tuple__66);
-  __pyx_codeobj__67 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__66, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_vec2LL, 541, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__67)) __PYX_ERR(0, 541, __pyx_L1_error)
+  __pyx_codeobj__67 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__66, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_vec2LL, 543, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__67)) __PYX_ERR(0, 543, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":553
+  /* "pycompass/SNE/pdf.pyx":555
  * -xyz = a numpy array represeting the vector.
  * """
  * def trendPlunge2Vec(double trend, double plunge):             # <<<<<<<<<<<<<<
  *     return np.array( [sin(trend) * cos(plunge),
  *                       cos(trend) * cos(plunge),
  */
-  __pyx_tuple__68 = PyTuple_Pack(2, __pyx_n_s_trend, __pyx_n_s_plunge); if (unlikely(!__pyx_tuple__68)) __PYX_ERR(0, 553, __pyx_L1_error)
+  __pyx_tuple__68 = PyTuple_Pack(2, __pyx_n_s_trend, __pyx_n_s_plunge); if (unlikely(!__pyx_tuple__68)) __PYX_ERR(0, 555, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__68);
   __Pyx_GIVEREF(__pyx_tuple__68);
-  __pyx_codeobj__69 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__68, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_trendPlunge2Vec, 553, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__69)) __PYX_ERR(0, 553, __pyx_L1_error)
+  __pyx_codeobj__69 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__68, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_trendPlunge2Vec, 555, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__69)) __PYX_ERR(0, 555, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":567
+  /* "pycompass/SNE/pdf.pyx":569
  *    -lon = the longitude of the position on the unit sphere intersected by this direction
  * """
  * def trendPlunge2LL(double trend, double plunge):             # <<<<<<<<<<<<<<
  *     return vec2LL( trendPlunge2Vec(trend,plunge) )
  * 
  */
-  __pyx_tuple__70 = PyTuple_Pack(2, __pyx_n_s_trend, __pyx_n_s_plunge); if (unlikely(!__pyx_tuple__70)) __PYX_ERR(0, 567, __pyx_L1_error)
+  __pyx_tuple__70 = PyTuple_Pack(2, __pyx_n_s_trend, __pyx_n_s_plunge); if (unlikely(!__pyx_tuple__70)) __PYX_ERR(0, 569, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__70);
   __Pyx_GIVEREF(__pyx_tuple__70);
-  __pyx_codeobj__71 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__70, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_trendPlunge2LL, 567, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__71)) __PYX_ERR(0, 567, __pyx_L1_error)
+  __pyx_codeobj__71 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__70, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_trendPlunge2LL, 569, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__71)) __PYX_ERR(0, 569, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":578
+  /* "pycompass/SNE/pdf.pyx":580
  *  -plunge = the plunge of the vector
  * """
  * def llToTrendPlunge(double lat, double lon):             # <<<<<<<<<<<<<<
  *     return vec2TrendPlunge(llToVec(lat,lon))
  * 
  */
-  __pyx_tuple__72 = PyTuple_Pack(2, __pyx_n_s_lat, __pyx_n_s_lon); if (unlikely(!__pyx_tuple__72)) __PYX_ERR(0, 578, __pyx_L1_error)
+  __pyx_tuple__72 = PyTuple_Pack(2, __pyx_n_s_lat, __pyx_n_s_lon); if (unlikely(!__pyx_tuple__72)) __PYX_ERR(0, 580, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__72);
   __Pyx_GIVEREF(__pyx_tuple__72);
-  __pyx_codeobj__73 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__72, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_llToTrendPlunge, 578, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__73)) __PYX_ERR(0, 578, __pyx_L1_error)
+  __pyx_codeobj__73 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__72, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_llToTrendPlunge, 580, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__73)) __PYX_ERR(0, 580, __pyx_L1_error)
 
-  /* "pycompass/SNE/pdf.pyx":588
+  /* "pycompass/SNE/pdf.pyx":590
  * -xyz = a numpy array represeting the normal vector.
  * """
  * def llToVec(lat,lon):             # <<<<<<<<<<<<<<
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),
+ *                       sin(lat),
  */
-  __pyx_tuple__74 = PyTuple_Pack(2, __pyx_n_s_lat, __pyx_n_s_lon); if (unlikely(!__pyx_tuple__74)) __PYX_ERR(0, 588, __pyx_L1_error)
+  __pyx_tuple__74 = PyTuple_Pack(2, __pyx_n_s_lat, __pyx_n_s_lon); if (unlikely(!__pyx_tuple__74)) __PYX_ERR(0, 590, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__74);
   __Pyx_GIVEREF(__pyx_tuple__74);
-  __pyx_codeobj__75 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__74, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_llToVec, 588, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__75)) __PYX_ERR(0, 588, __pyx_L1_error)
+  __pyx_codeobj__75 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__74, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_llToVec, 590, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__75)) __PYX_ERR(0, 590, __pyx_L1_error)
+
+  /* "pycompass/SNE/pdf.pyx":634
+ *  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees).
+ * """
+ * def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):             # <<<<<<<<<<<<<<
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)
+ */
+  __pyx_tuple__76 = PyTuple_Pack(14, __pyx_n_s_grid, __pyx_n_s_data, __pyx_n_s_bandwidth, __pyx_n_s_kwds, __pyx_n_s_lookupRes, __pyx_n_s_x_2, __pyx_n_s_N_2, __pyx_n_s_acos, __pyx_n_s_gxyz, __pyx_n_s_lat_2, __pyx_n_s_lon_2, __pyx_n_s_dxyz, __pyx_n_s_t, __pyx_n_s_p); if (unlikely(!__pyx_tuple__76)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__76);
+  __Pyx_GIVEREF(__pyx_tuple__76);
+  __pyx_codeobj__77 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, CO_OPTIMIZED|CO_NEWLOCALS|CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__76, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pycompass_SNE_pdf_pyx, __pyx_n_s_sphericalKDE, 634, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__77)) __PYX_ERR(0, 634, __pyx_L1_error)
 
   /* "View.MemoryView":284
  *         return self.name
@@ -27547,9 +29370,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_tuple__76 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__76)) __PYX_ERR(2, 284, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__76);
-  __Pyx_GIVEREF(__pyx_tuple__76);
+  __pyx_tuple__78 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__78)) __PYX_ERR(2, 284, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__78);
+  __Pyx_GIVEREF(__pyx_tuple__78);
 
   /* "View.MemoryView":285
  * 
@@ -27558,9 +29381,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_tuple__77 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__77)) __PYX_ERR(2, 285, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__77);
-  __Pyx_GIVEREF(__pyx_tuple__77);
+  __pyx_tuple__79 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(2, 285, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__79);
+  __Pyx_GIVEREF(__pyx_tuple__79);
 
   /* "View.MemoryView":286
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -27569,9 +29392,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__78 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__78)) __PYX_ERR(2, 286, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__78);
-  __Pyx_GIVEREF(__pyx_tuple__78);
+  __pyx_tuple__80 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__80)) __PYX_ERR(2, 286, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__80);
+  __Pyx_GIVEREF(__pyx_tuple__80);
 
   /* "View.MemoryView":289
  * 
@@ -27580,9 +29403,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_tuple__79 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(2, 289, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__79);
-  __Pyx_GIVEREF(__pyx_tuple__79);
+  __pyx_tuple__81 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__81)) __PYX_ERR(2, 289, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__81);
+  __Pyx_GIVEREF(__pyx_tuple__81);
 
   /* "View.MemoryView":290
  * 
@@ -27591,19 +29414,19 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__80 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__80)) __PYX_ERR(2, 290, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__80);
-  __Pyx_GIVEREF(__pyx_tuple__80);
+  __pyx_tuple__82 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__82)) __PYX_ERR(2, 290, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__82);
+  __Pyx_GIVEREF(__pyx_tuple__82);
 
   /* "(tree fragment)":1
  * def __pyx_unpickle_Enum(__pyx_type, long __pyx_checksum, __pyx_state):             # <<<<<<<<<<<<<<
  *     if __pyx_checksum != 0xb068931:
  *         from pickle import PickleError as __pyx_PickleError
  */
-  __pyx_tuple__81 = PyTuple_Pack(5, __pyx_n_s_pyx_type, __pyx_n_s_pyx_checksum, __pyx_n_s_pyx_state, __pyx_n_s_pyx_PickleError, __pyx_n_s_pyx_result); if (unlikely(!__pyx_tuple__81)) __PYX_ERR(2, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__81);
-  __Pyx_GIVEREF(__pyx_tuple__81);
-  __pyx_codeobj__82 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__81, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__82)) __PYX_ERR(2, 1, __pyx_L1_error)
+  __pyx_tuple__83 = PyTuple_Pack(5, __pyx_n_s_pyx_type, __pyx_n_s_pyx_checksum, __pyx_n_s_pyx_state, __pyx_n_s_pyx_PickleError, __pyx_n_s_pyx_result); if (unlikely(!__pyx_tuple__83)) __PYX_ERR(2, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__83);
+  __Pyx_GIVEREF(__pyx_tuple__83);
+  __pyx_codeobj__84 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__83, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__84)) __PYX_ERR(2, 1, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -27618,6 +29441,7 @@ static int __Pyx_InitGlobals(void) {
   __pyx_int_2 = PyInt_FromLong(2); if (unlikely(!__pyx_int_2)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_3 = PyInt_FromLong(3); if (unlikely(!__pyx_int_3)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_50 = PyInt_FromLong(50); if (unlikely(!__pyx_int_50)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_int_1000 = PyInt_FromLong(1000); if (unlikely(!__pyx_int_1000)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_184977713 = PyInt_FromLong(184977713L); if (unlikely(!__pyx_int_184977713)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_neg_1 = PyInt_FromLong(-1); if (unlikely(!__pyx_int_neg_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   return 0;
@@ -27841,7 +29665,7 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * import numpy as np
  * cimport numpy as np
  * import scipy.special as sp             # <<<<<<<<<<<<<<
- * #cimport scipy as sp
+ * import scipy.stats as stats
  * 
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
@@ -27855,71 +29679,89 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sp, __pyx_t_2) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":20
+  /* "pycompass/SNE/pdf.pyx":17
+ * cimport numpy as np
+ * import scipy.special as sp
+ * import scipy.stats as stats             # <<<<<<<<<<<<<<
+ * 
+ * #cimport scipy as sp
+ */
+  __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_INCREF(__pyx_n_s__45);
+  __Pyx_GIVEREF(__pyx_n_s__45);
+  PyList_SET_ITEM(__pyx_t_2, 0, __pyx_n_s__45);
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_scipy_stats, __pyx_t_2, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_stats, __pyx_t_1) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":22
  * 
  * #pull pi from numpy
  * cdef double pi = np.pi             # <<<<<<<<<<<<<<
  * 
  * """
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 20, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_pi); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_pi); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_3 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 22, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_9pycompass_3SNE_3pdf_pi = __pyx_t_3;
 
-  /* "pycompass/SNE/pdf.pyx":41
+  /* "pycompass/SNE/pdf.pyx":43
  * Evaluate prior probability over a grid.
  * """
  * def prior(np.ndarray grid, np.ndarray normal):             # <<<<<<<<<<<<<<
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_3prior, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_prior, __pyx_t_1) < 0) __PYX_ERR(0, 41, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_3prior, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 43, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_prior, __pyx_t_2) < 0) __PYX_ERR(0, 43, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":178
+  /* "pycompass/SNE/pdf.pyx":180
  *  -steps = the number of integration steps to used. Default is 25.
  * """
  * def likelihoodExp1D(np.ndarray grid, np.ndarray cov, int nobserved,int steps=25):             # <<<<<<<<<<<<<<
  *     #grid is a list of phi,theta points such that grid[0] = [phi1,phi2,....]
  *     if grid.shape[0] != 2:
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_9likelihoodExp1D, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 178, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_likelihoodExp1D, __pyx_t_1) < 0) __PYX_ERR(0, 178, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_9likelihoodExp1D, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_likelihoodExp1D, __pyx_t_2) < 0) __PYX_ERR(0, 180, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":221
+  /* "pycompass/SNE/pdf.pyx":223
  *  -normal = the outcrop normal vector used to calculate the prior.
  * """
  * def posteriorExp1D(np.ndarray grid, np.ndarray cov, int nobserved, np.ndarray normal, int steps=25 ):             # <<<<<<<<<<<<<<
  *     #evaluate prior and likelihood
  *     pr = prior(grid,normal)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_11posteriorExp1D, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_posteriorExp1D, __pyx_t_1) < 0) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_11posteriorExp1D, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 223, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_posteriorExp1D, __pyx_t_2) < 0) __PYX_ERR(0, 223, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":233
+  /* "pycompass/SNE/pdf.pyx":235
  * Compute the posterior probability at the specified point.
  * """
  * def getPosteriorDensityAt(double phi, double theta, np.ndarray cov, int nobserved, np.ndarray n, int steps=500):             # <<<<<<<<<<<<<<
  *     #compute the scatter matrix
  *     cdef double[:,:] X = cov * nobserved
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_13getPosteriorDensityAt, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 233, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_getPosteriorDensityAt, __pyx_t_1) < 0) __PYX_ERR(0, 233, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_13getPosteriorDensityAt, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 235, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_getPosteriorDensityAt, __pyx_t_2) < 0) __PYX_ERR(0, 235, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":269
+  /* "pycompass/SNE/pdf.pyx":271
  *  -a nsamples x 3 numpy array where each element contains each [phi,theta,alpha] in the markov chain
  * """
  * def samplePosteriorMCMC(np.ndarray cov, int nobserved, double[:] normal=None, int nsamples=5000, int maxIter=100000,double proposalWidth=0.075,verbose=True):             # <<<<<<<<<<<<<<
@@ -27927,144 +29769,156 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  *     cdef double[:,:] chain = np.zeros([nsamples,3],dtype=np.double) #phi,theta,alpha
  */
   __pyx_t_4 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(Py_None);
-  if (unlikely(!__pyx_t_4.memview)) __PYX_ERR(0, 269, __pyx_L1_error)
+  if (unlikely(!__pyx_t_4.memview)) __PYX_ERR(0, 271, __pyx_L1_error)
   __pyx_k__7 = __pyx_t_4;
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_15samplePosteriorMCMC, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 269, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_samplePosteriorMCMC, __pyx_t_1) < 0) __PYX_ERR(0, 269, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_15samplePosteriorMCMC, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_samplePosteriorMCMC, __pyx_t_2) < 0) __PYX_ERR(0, 271, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":385
+  /* "pycompass/SNE/pdf.pyx":387
  * -a density grid for plotting with mplstereneot.contourf or similar. Density values will sum to 1 over the domain.
  * """
  * def gridSamples(np.ndarray grid, double[:,:] trace):             # <<<<<<<<<<<<<<
  *     #create location for output
  *     cdef double[:] out = np.zeros([grid.shape[1]])
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_17gridSamples, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 385, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gridSamples, __pyx_t_1) < 0) __PYX_ERR(0, 385, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_17gridSamples, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gridSamples, __pyx_t_2) < 0) __PYX_ERR(0, 387, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":424
+  /* "pycompass/SNE/pdf.pyx":426
  * Utility function for creating covariance matrices from phi,theta, etc.
  * """
  * def constructCOV(double phi, double theta, double alpha, double e1, double e2, double e3 ):             # <<<<<<<<<<<<<<
  *     #build basis matrix containing with columns = eigenvectors
  *     cdef double e11,e12,e13,e21,e22,e23,e31,e32,e33
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_19constructCOV, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 424, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_constructCOV, __pyx_t_1) < 0) __PYX_ERR(0, 424, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_19constructCOV, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 426, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_constructCOV, __pyx_t_2) < 0) __PYX_ERR(0, 426, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":461
+  /* "pycompass/SNE/pdf.pyx":463
  *  - a grid of points such that each column represents a lat,long pair on the southern-hemisphere.
  * """
  * def grid(N=50):             # <<<<<<<<<<<<<<
  *     bound = pi / 2.0
  *     grid = np.zeros((2,N**2),dtype=np.double)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_21grid, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 461, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grid, __pyx_t_1) < 0) __PYX_ERR(0, 461, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_21grid, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grid, __pyx_t_2) < 0) __PYX_ERR(0, 463, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":483
+  /* "pycompass/SNE/pdf.pyx":485
  *  - A numpy array with N rows and columns representing the latitude and longitude of the points.
  * """
  * def gridArc(double[:,:] cov,int N=50):             # <<<<<<<<<<<<<<
  *     #get eigens of icov
  *     eval,evec = np.linalg.eig(cov)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_23gridArc, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 483, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gridArc, __pyx_t_1) < 0) __PYX_ERR(0, 483, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_23gridArc, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_gridArc, __pyx_t_2) < 0) __PYX_ERR(0, 485, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":518
+  /* "pycompass/SNE/pdf.pyx":520
  *  - plunge = the plunge of the vector (in radians)
  * """
  * def vec2TrendPlunge(double[:] xyz):             # <<<<<<<<<<<<<<
  *     cdef np.ndarray out = np.zeros([2])
  *     out[0] =  atan2(xyz[0],xyz[1])
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_25vec2TrendPlunge, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 518, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec2TrendPlunge, __pyx_t_1) < 0) __PYX_ERR(0, 518, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_25vec2TrendPlunge, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 520, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec2TrendPlunge, __pyx_t_2) < 0) __PYX_ERR(0, 520, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":541
+  /* "pycompass/SNE/pdf.pyx":543
  *  - lon = the longitude of the point defined by the intersection of this vector and the unit sphere
  * """
  * def vec2LL(double[:] xyz):             # <<<<<<<<<<<<<<
  *     cdef double lat = asin(-xyz[1])
  *     return np.array( [lat, asin(xyz[0]/cos(lat))] )
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_27vec2LL, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 541, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec2LL, __pyx_t_1) < 0) __PYX_ERR(0, 541, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_27vec2LL, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 543, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec2LL, __pyx_t_2) < 0) __PYX_ERR(0, 543, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":553
+  /* "pycompass/SNE/pdf.pyx":555
  * -xyz = a numpy array represeting the vector.
  * """
  * def trendPlunge2Vec(double trend, double plunge):             # <<<<<<<<<<<<<<
  *     return np.array( [sin(trend) * cos(plunge),
  *                       cos(trend) * cos(plunge),
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_29trendPlunge2Vec, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 553, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_trendPlunge2Vec, __pyx_t_1) < 0) __PYX_ERR(0, 553, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_29trendPlunge2Vec, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 555, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_trendPlunge2Vec, __pyx_t_2) < 0) __PYX_ERR(0, 555, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":567
+  /* "pycompass/SNE/pdf.pyx":569
  *    -lon = the longitude of the position on the unit sphere intersected by this direction
  * """
  * def trendPlunge2LL(double trend, double plunge):             # <<<<<<<<<<<<<<
  *     return vec2LL( trendPlunge2Vec(trend,plunge) )
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_31trendPlunge2LL, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 567, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_trendPlunge2LL, __pyx_t_1) < 0) __PYX_ERR(0, 567, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_31trendPlunge2LL, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 569, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_trendPlunge2LL, __pyx_t_2) < 0) __PYX_ERR(0, 569, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":578
+  /* "pycompass/SNE/pdf.pyx":580
  *  -plunge = the plunge of the vector
  * """
  * def llToTrendPlunge(double lat, double lon):             # <<<<<<<<<<<<<<
  *     return vec2TrendPlunge(llToVec(lat,lon))
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_33llToTrendPlunge, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 578, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_llToTrendPlunge, __pyx_t_1) < 0) __PYX_ERR(0, 578, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_33llToTrendPlunge, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 580, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_llToTrendPlunge, __pyx_t_2) < 0) __PYX_ERR(0, 580, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pycompass/SNE/pdf.pyx":588
+  /* "pycompass/SNE/pdf.pyx":590
  * -xyz = a numpy array represeting the normal vector.
  * """
  * def llToVec(lat,lon):             # <<<<<<<<<<<<<<
  *     return np.array( [cos(lat) * sin(lon),
- *                       -sin(lat),
+ *                       sin(lat),
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_35llToVec, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 588, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_llToVec, __pyx_t_1) < 0) __PYX_ERR(0, 588, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_35llToVec, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 590, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_llToVec, __pyx_t_2) < 0) __PYX_ERR(0, 590, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "pycompass/SNE/pdf.pyx":634
+ *  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees).
+ * """
+ * def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):             # <<<<<<<<<<<<<<
+ *     #build lookup table for kernel and for acos calcs (speed hack)
+ *     lookupRes = kwds.get("lookupRes",1000)
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_9pycompass_3SNE_3pdf_37sphericalKDE, NULL, __pyx_n_s_pycompass_SNE_pdf); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sphericalKDE, __pyx_t_2) < 0) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pycompass/SNE/pdf.pyx":1
  * #cython: boundscheck=False, wraparound=False, nonecheck=False, initializedcheck=False,cdivision=True             # <<<<<<<<<<<<<<
  * #^ disables type checking etc - faster but causes seg-faults. on error
  * 
  */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_2) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "View.MemoryView":207
  *         info.obj = self
@@ -28073,10 +29927,10 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * 
  *     def __dealloc__(array self):
  */
-  __pyx_t_1 = __pyx_capsule_create(((void *)(&__pyx_array_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 207, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem((PyObject *)__pyx_array_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_1) < 0) __PYX_ERR(2, 207, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = __pyx_capsule_create(((void *)(&__pyx_array_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 207, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem((PyObject *)__pyx_array_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_2) < 0) __PYX_ERR(2, 207, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_array_type);
 
   /* "View.MemoryView":284
@@ -28086,12 +29940,12 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__76, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 284, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__78, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 284, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(generic);
-  __Pyx_DECREF_SET(generic, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
+  __Pyx_DECREF_SET(generic, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "View.MemoryView":285
  * 
@@ -28100,12 +29954,12 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__77, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 285, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__79, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 285, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(strided);
-  __Pyx_DECREF_SET(strided, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
+  __Pyx_DECREF_SET(strided, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "View.MemoryView":286
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -28114,12 +29968,12 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__78, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 286, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__80, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 286, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(indirect);
-  __Pyx_DECREF_SET(indirect, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
+  __Pyx_DECREF_SET(indirect, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "View.MemoryView":289
  * 
@@ -28128,12 +29982,12 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__79, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 289, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__81, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 289, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(contiguous);
-  __Pyx_DECREF_SET(contiguous, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
+  __Pyx_DECREF_SET(contiguous, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "View.MemoryView":290
  * 
@@ -28142,12 +29996,12 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__80, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 290, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__82, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 290, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(indirect_contiguous);
-  __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
+  __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "View.MemoryView":314
  * 
@@ -28182,10 +30036,10 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * 
  * 
  */
-  __pyx_t_1 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 537, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem((PyObject *)__pyx_memoryview_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_1) < 0) __PYX_ERR(2, 537, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 537, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem((PyObject *)__pyx_memoryview_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_2) < 0) __PYX_ERR(2, 537, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_memoryview_type);
 
   /* "View.MemoryView":983
@@ -28195,10 +30049,10 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  * 
  * 
  */
-  __pyx_t_1 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 983, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem((PyObject *)__pyx_memoryviewslice_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_1) < 0) __PYX_ERR(2, 983, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), ((char *)"getbuffer(obj, view, flags)")); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 983, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem((PyObject *)__pyx_memoryviewslice_type->tp_dict, __pyx_n_s_pyx_getbuffer, __pyx_t_2) < 0) __PYX_ERR(2, 983, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_memoryviewslice_type);
 
   /* "(tree fragment)":1
@@ -28206,10 +30060,10 @@ static int __pyx_pymod_exec_pdf(PyObject *__pyx_pyinit_module)
  *     if __pyx_checksum != 0xb068931:
  *         from pickle import PickleError as __pyx_PickleError
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_15View_dot_MemoryView_1__pyx_unpickle_Enum, NULL, __pyx_n_s_View_MemoryView); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pyx_unpickle_Enum, __pyx_t_1) < 0) __PYX_ERR(2, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_15View_dot_MemoryView_1__pyx_unpickle_Enum, NULL, __pyx_n_s_View_MemoryView); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pyx_unpickle_Enum, __pyx_t_2) < 0) __PYX_ERR(2, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "(tree fragment)":9
  *         __pyx_unpickle_Enum__set_state(<Enum> __pyx_result, __pyx_state)
@@ -29388,6 +31242,99 @@ static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED
     return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
 }
 #endif
+
+/* dict_getitem_default */
+      static PyObject* __Pyx_PyDict_GetItemDefault(PyObject* d, PyObject* key, PyObject* default_value) {
+    PyObject* value;
+#if PY_MAJOR_VERSION >= 3 && !CYTHON_COMPILING_IN_PYPY
+    value = PyDict_GetItemWithError(d, key);
+    if (unlikely(!value)) {
+        if (unlikely(PyErr_Occurred()))
+            return NULL;
+        value = default_value;
+    }
+    Py_INCREF(value);
+#else
+    if (PyString_CheckExact(key) || PyUnicode_CheckExact(key) || PyInt_CheckExact(key)) {
+        value = PyDict_GetItem(d, key);
+        if (unlikely(!value)) {
+            value = default_value;
+        }
+        Py_INCREF(value);
+    } else {
+        if (default_value == Py_None)
+            default_value = NULL;
+        value = PyObject_CallMethodObjArgs(
+            d, __pyx_n_s_get, key, default_value, NULL);
+    }
+#endif
+    return value;
+}
+
+/* PyObjectCallMethod1 */
+      static PyObject* __Pyx__PyObject_CallMethod1(PyObject* method, PyObject* arg) {
+    PyObject *result = NULL;
+#if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(method))) {
+        PyObject *self = PyMethod_GET_SELF(method);
+        if (likely(self)) {
+            PyObject *args;
+            PyObject *function = PyMethod_GET_FUNCTION(method);
+            #if CYTHON_FAST_PYCALL
+            if (PyFunction_Check(function)) {
+                PyObject *args[2] = {self, arg};
+                result = __Pyx_PyFunction_FastCall(function, args, 2);
+                goto done;
+            }
+            #endif
+            #if CYTHON_FAST_PYCCALL
+            if (__Pyx_PyFastCFunction_Check(function)) {
+                PyObject *args[2] = {self, arg};
+                result = __Pyx_PyCFunction_FastCall(function, args, 2);
+                goto done;
+            }
+            #endif
+            args = PyTuple_New(2);
+            if (unlikely(!args)) goto done;
+            Py_INCREF(self);
+            PyTuple_SET_ITEM(args, 0, self);
+            Py_INCREF(arg);
+            PyTuple_SET_ITEM(args, 1, arg);
+            Py_INCREF(function);
+            result = __Pyx_PyObject_Call(function, args, NULL);
+            Py_DECREF(args);
+            Py_DECREF(function);
+            return result;
+        }
+    }
+#endif
+    result = __Pyx_PyObject_CallOneArg(method, arg);
+    goto done;
+done:
+    return result;
+}
+static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name, PyObject* arg) {
+    PyObject *method, *result = NULL;
+    method = __Pyx_PyObject_GetAttrStr(obj, method_name);
+    if (unlikely(!method)) goto done;
+    result = __Pyx__PyObject_CallMethod1(method, arg);
+done:
+    Py_XDECREF(method);
+    return result;
+}
+
+/* append */
+      static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x) {
+    if (likely(PyList_CheckExact(L))) {
+        if (unlikely(__Pyx_PyList_Append(L, x) < 0)) return -1;
+    } else {
+        PyObject* retval = __Pyx_PyObject_CallMethod1(L, __pyx_n_s_append, x);
+        if (unlikely(!retval))
+            return -1;
+        Py_DECREF(retval);
+    }
+    return 0;
+}
 
 /* RaiseNoneIterError */
       static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
