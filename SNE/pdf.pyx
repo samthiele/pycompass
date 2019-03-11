@@ -593,6 +593,16 @@ def llToVec(lat,lon):
                       -cos(lat) * cos(lon)])
                       
 
+############################################
+#KERNEL DENSITY ESTIMATION
+############################################
+
+#The following functions can be used to construct kernel density estimates from
+#SNE measurements, as this is the most convenient way of analysing such large numbers
+#of samples.
+
+#Note that we only implement KDEs for the orientation aspects as scipy already has good libraries for
+#doing KDEs of linear variables (e.g. thickness). 
 """
 Fast part of the code for the function below
 """
@@ -620,7 +630,7 @@ cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] dat
     return out
                       
 """
-Do a simple KDE on directional data
+Do a spherical KDE on directional data
 
 **Arguments**:
  -grid = a (2,n) list of (lats,lons) to evaluate the KDE on, as created by grid(...).
@@ -660,3 +670,55 @@ def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):
     
     #evaluate and return
     return np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))
+  
+"""
+Do a circular KDE on directional data. Note that this will not work  for signed data as it only evaluates over zero to 180. The code could easily be modified to allow signed data (e.g. wind directions, slip vectors), 
+but I don't need too (yet) and am a lazy shit... [to force signed directions, simply take the signed dot product rather than the absolute dot product when calculating the angle in fillKDE(...). 
+
+**Arguments**:
+ -data = a list of measurements to perform the KDE on
+ -bandwidth = the standard deviation of the gaussian kernal used to build the KDE
+**Keywords**:
+ -outputRes = the resolution of the output KDE array. Default is 1000.
+ -lookupRes = the resolution of the lookup tables to use. Default is 1000. 
+ -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees). 
+""" 
+def circularKDE(np.ndarray data, double bandwidth, **kwds):
+
+    #build lookup table for kernel and for acos calcs (speed hack)
+    lookupRes = kwds.get("lookupRes",1000)
+    _x = np.linspace(0,np.pi/2,lookupRes+1)
+    if kwds.get("degrees",True):
+        bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
+    cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
+    
+    #create arccosine lookup table
+    _x = np.linspace(0,1,lookupRes+1)
+    cdef double[:] _acos = np.arccos(_x)
+    
+    #build grid vectors
+    gxyz = []
+    outputRes = kwds.get("outputRes",1000)
+    for _t in np.linspace(0,np.pi,outputRes):
+        gxyz.append( [np.sin(_t),np.cos(_t),0] )   
+    gxyz = np.array(gxyz)
+    
+    #convert data to data vectors
+    dxyz = []
+    for _t in np.array(data):
+        if kwds.get("degrees",True):
+            dxyz.append( trendPlunge2Vec(np.deg2rad(_t), 0 ) )
+        else:
+            dxyz.append( trendPlunge2Vec(_t, 0 ) )
+    dxyz = np.array(dxyz) 
+    
+    #evaluate
+    kde = np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))
+    
+    #normalise
+    if kwds.get("degrees",True):
+        kde = kde / np.trapz(kde,np.linspace(0,180,outputRes))
+    else:
+        kde = kde / np.trapz(kde,np.linspace(0,np.pi,outputRes))
+    
+    return kde
