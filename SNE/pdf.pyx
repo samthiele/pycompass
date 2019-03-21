@@ -1,4 +1,3 @@
-#cython: boundscheck=False, wraparound=False, nonecheck=False, initializedcheck=False,cdivision=True
 #^ disables type checking etc - faster but causes seg-faults. on error
 
 from libc.math cimport sin
@@ -604,15 +603,22 @@ def llToVec(lat,lon):
 #Note that we only implement KDEs for the orientation aspects as scipy already has good libraries for
 #doing KDEs of linear variables (e.g. thickness). 
 """
-Fast part of the code for the function below
+Fast part of the code for the sphericalKDE and circularKDE functions
 """
-cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] data, double[:] kernel, double[:] acos, double lookupRes):
+cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] data, double bandwidth, int lookupRes, bint signed):
+    
+    #build lookup table for kernel and for acos calcs (speed hack)
+    cdef double[:] kernel = stats.norm(0,bandwidth).pdf( np.linspace(0,pi,lookupRes+1) )
+    
+    #create arccosine lookup table
+    cdef double[:] acos = np.arccos( np.linspace(-1,1,lookupRes+1) )
+    
     #loop through grid points
     cdef double dot, alpha
-    cdef double hpi = pi / 2 #half-pi
     cdef double nf = 1.0 / ndata #normalising factor for each kernel
     cdef double[:] out = np.zeros(npoints)
     cdef int _g, _d
+    
     for _g in range(npoints):
         gx = grid[_g,0]
         gy = grid[_g,1]
@@ -620,17 +626,21 @@ cdef double[:] fillKDE(int npoints, int ndata, double[:,:] grid, double[:,:] dat
         
         for _d in range(ndata):
             #compute dot product
-            dot = abs(grid[_g,0]*data[_d,0] + grid[_g,1]*data[_d,1] + grid[_g,2]*data[_d,2])
+            dot = grid[_g,0]*data[_d,0] + grid[_g,1]*data[_d,1] + grid[_g,2]*data[_d,2]
+            
+            #restrict angles to 0 - 90 [for non-directional vectors such as poles or strike vectors]
+            if not signed:
+                dot = abs(dot)
             
             #lookup corresponding alpha in lookup table
-            alpha = acos[int(dot*lookupRes)]
+            alpha = acos[int((dot+1)* lookupRes / 2) ]
             
             #accumulate relevant kernel value
-            out[_g] += nf*kernel[int(lookupRes*alpha/hpi)]
+            out[_g] += nf*kernel[int(lookupRes*alpha/pi)]
     return out
                       
 """
-Do a spherical KDE on directional data
+Do a spherical KDE on directional data (e.g. poles to planes)
 
 **Arguments**:
  -grid = a (2,n) list of (lats,lons) to evaluate the KDE on, as created by grid(...).
@@ -642,17 +652,10 @@ Do a spherical KDE on directional data
  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees). 
 """
 def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):
-    #build lookup table for kernel and for acos calcs (speed hack)
-    lookupRes = kwds.get("lookupRes",1000)
-    _x = np.linspace(0,np.pi/2,lookupRes+1)
-    if kwds.get("degrees",True):
-        bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
-    cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
-    
-    #create arccosine lookup table
-    _x = np.linspace(0,1,lookupRes+1)
-    cdef double[:] _acos = np.arccos(_x)
 
+    if kwds.get("degrees",True):
+        bandwidth = np.deg2rad(bandwidth)
+    
     #convert grid to xyz vectors
     gxyz = []
     for _lat,_lon in np.array(grid).T:
@@ -669,7 +672,7 @@ def sphericalKDE(np.ndarray grid, np.ndarray data, double bandwidth, **kwds):
     dxyz = np.array(dxyz)
     
     #evaluate and return
-    return np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))
+    return np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,bandwidth, kwds.get("lookupRes",1000),False))
   
 """
 Do a circular KDE on directional data. Note that this will not work  for signed data as it only evaluates over zero to 180. The code could easily be modified to allow signed data (e.g. wind directions, slip vectors), 
@@ -678,28 +681,21 @@ but I don't need too (yet) and am a lazy shit... [to force signed directions, si
 **Arguments**:
  -data = a list of measurements to perform the KDE on
  -bandwidth = the standard deviation of the gaussian kernal used to build the KDE
+ -signed = True if the circular data are signed vectors (e.g. wind directions or dip-directions) as opposed to directions (such as strike vectors). Default is False. 
 **Keywords**:
  -outputRes = the resolution of the output KDE array. Default is 1000.
  -lookupRes = the resolution of the lookup tables to use. Default is 1000. 
  -degrees = if True, data are treated as angles in degrees. Default is True (i.e. use degrees). 
 """ 
-def circularKDE(np.ndarray data, double bandwidth, **kwds):
+def circularKDE(np.ndarray data, double bandwidth, bint signed = False, **kwds):
 
-    #build lookup table for kernel and for acos calcs (speed hack)
-    lookupRes = kwds.get("lookupRes",1000)
-    _x = np.linspace(0,np.pi/2,lookupRes+1)
     if kwds.get("degrees",True):
-        bandwidth=np.deg2rad(bandwidth) #lookup table is in radians
-    cdef double[:] _N = stats.norm(0,bandwidth).pdf(_x)
-    
-    #create arccosine lookup table
-    _x = np.linspace(0,1,lookupRes+1)
-    cdef double[:] _acos = np.arccos(_x)
-    
+        bandwidth = np.deg2rad(bandwidth)
+        
     #build grid vectors
     gxyz = []
     outputRes = kwds.get("outputRes",1000)
-    for _t in np.linspace(0,np.pi,outputRes):
+    for _t in np.linspace(0,2*np.pi,outputRes):
         gxyz.append( [np.sin(_t),np.cos(_t),0] )   
     gxyz = np.array(gxyz)
     
@@ -713,12 +709,12 @@ def circularKDE(np.ndarray data, double bandwidth, **kwds):
     dxyz = np.array(dxyz) 
     
     #evaluate
-    kde = np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,_N,_acos,lookupRes))
+    kde = np.array(fillKDE(gxyz.shape[0],dxyz.shape[0],gxyz,dxyz,bandwidth, kwds.get("lookupRes",1000), signed))
     
     #normalise
     if kwds.get("degrees",True):
-        kde = kde / np.trapz(kde,np.linspace(0,180,outputRes))
+        kde = kde / np.trapz(kde,np.linspace(0,360,outputRes))
     else:
-        kde = kde / np.trapz(kde,np.linspace(0,np.pi,outputRes))
+        kde = kde / np.trapz(kde,np.linspace(0,2*np.pi,outputRes))
     
     return kde
