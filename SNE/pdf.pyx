@@ -1,3 +1,4 @@
+#cython: boundscheck=False, wraparound=False, nonecheck=False, initializedcheck=False,cdivision=True
 #^ disables type checking etc - faster but causes seg-faults. on error
 
 from libc.math cimport sin

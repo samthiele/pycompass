@@ -28,10 +28,10 @@ class SNEList:
     **Returns**:
      - a SNEList object. 
     """
-    def loadFromData( dataset, o ):
+    def loadFromData( data, o ):
         
         #search for SNEs
-        _SNEs = data.filterByName("SNE_Samples",data=o)
+        SNEs = data.filterByName("SNE_Samples",data=o)
     
         #extract data
         trend = []
@@ -44,13 +44,13 @@ class SNEList:
             #gather data from SNE points
             points = s["POINTS"]
             x += list(np.fromstring( points["x"], dtype=np.float, sep=','))
-            y += list(np.fromstring( points["x"], dtype=np.float, sep=','))
-            z += list(np.fromstring( points["x"], dtype=np.float, sep=','))
+            y += list(np.fromstring( points["y"], dtype=np.float, sep=','))
+            z += list(np.fromstring( points["z"], dtype=np.float, sep=','))
             trend += list(np.fromstring( points["trend"], dtype=np.float, sep=','))
             plunge += list(np.fromstring( points["plunge"], dtype=np.float, sep=','))
             thick += list(np.fromstring( points["thickness"], dtype=np.float, sep=','))
         
-        return SNEList( x, y, z, trend, plunge, thickness )
+        return SNEList( x, y, z, trend, plunge, thick )
     
     """
     Construct SNE object.
@@ -70,17 +70,28 @@ class SNEList:
         self.oriKDE = None
      
     """
-    Return a new SNEList that combines SNEs from this object and another one. 
+    Return a new (copy) SNEList that combines SNEs from this object and another one. 
     """
     def merge( self, SNEList2 ):
-        trend = np.append(self.trend,SNEList2.trend)
-        plunge = np.append(self.plunge,SNEList2.plunge)
-        thick = np.append(self.thickness,SNEList2.thickness)
-        pos = np.append(self.pos,SNEList2.pos).T
+        out = SNEList()
+        out.append(SNEList2)
+        return out
+    
+    """
+    Add data from a SNEList2 to this one. 
+    """    
+    def append( self, SNEList2 ):
+        self.trend = np.append(self.trend,SNEList2.trend)
+        self.plunge = np.append(self.plunge,SNEList2.plunge)
+        self.thickness = np.append(self.thickness,SNEList2.thickness)
+        self.pos = np.append(self.pos,SNEList2.pos,axis=1)
         
-        return SNEList( pos[0], pos[1], pos[2], trend, plunge, thick)
-        
-        
+        #reset any KDEs
+        self.trendKDE = None
+        self.plungeKDE = None
+        self.thickKDE = None
+        self.oriKDE = None
+    
     ############################
     ##STATISTICAL INTERROGATION
     ############################
@@ -208,7 +219,7 @@ class SNEList:
             kde *= 2
             
         #mask values to integrate
-        mask = np.logical_and(grid > minv,grid < maxv)
+        mask = np.logical_and(grid >= minv,grid <= maxv)
         
         #integrate and return
         return np.trapz(kde[mask],grid[mask])        
