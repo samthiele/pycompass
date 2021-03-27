@@ -8,7 +8,7 @@ import scipy as sp
 #os.chdir('..') #move up one level
 setup(
 	name = "pycompass",
-        install_requires=['Cython'],
+        install_requires=['Cython', 'scipy', 'mplstereonet', 'xmltodict'],
         packages=find_packages(),
 	ext_modules = cythonize("pycompass/SNE/pdf.pyx"),
 	include_dirs = [np.get_include(),sp.get_include()]
